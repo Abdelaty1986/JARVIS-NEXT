@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["python311", "nodejs_20", "npm"]
+
+[phases.install]
+cmds = [
+  "python -m pip install --upgrade pip",
+  "pip install -r requirements.txt",
+  "npm install -g opencode-ai || npm install -g @opencode-ai/cli || true",
+  "which opencode || true",
+  "opencode --version || true"
+]
+
+[start]
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"
