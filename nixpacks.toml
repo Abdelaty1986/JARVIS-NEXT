@@ -1,18 +1,12 @@
-[variables]
-NODE_ENV="production"
-
 [phases.setup]
-nixPkgs = ["python311","nodejs_20"]
+nixPkgs = ["python313", "nodejs_22"]
 
 [phases.install]
 cmds = [
-  "python -m pip install --upgrade pip",
+  "python -m venv /app/.venv",
   "pip install -r requirements.txt",
-  "npm install -g @opencode-ai/cli",
-  "echo ===== OPCODE CHECK =====",
-  "which opencode",
-  "opencode --version"
+  "npm install -g @opencode-ai/cli"
 ]
 
 [start]
-cmd = "export PATH=/usr/local/bin:$PATH && gunicorn app:app --bind 0.0.0.0:$PORT"
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"
