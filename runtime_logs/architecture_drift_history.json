@@ -1,0 +1,402 @@
+[
+  {
+    "timestamp": "2026-05-18T06:36:30.769513Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:36:40.786023Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:36:50.803873Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:00.771027Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:10.786194Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:20.787998Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:30.825432Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:40.821876Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:37:50.803818Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:38:00.761561Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:38:10.775218Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:40:04.934089Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:40:05.658361Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:38.410127Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:38.818890Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:40.126163Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:40.379053Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:41.424388Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:42.019401Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-18T06:58:43.287560Z",
+    "route_count": 93,
+    "template_count": 4,
+    "module_count": 0,
+    "static_file_count": 15,
+    "route_categories": {
+      "jarvis": 93
+    },
+    "domain_map": {
+      "general": {
+        "templates": 3,
+        "modules": 0
+      },
+      "jarvis": {
+        "templates": 1,
+        "modules": 0
+      }
+    }
+  }
+]

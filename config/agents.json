@@ -1,0 +1,45 @@
+{
+  "policy": {
+    "free_agents_only": true,
+    "allow_paid_agents": false,
+    "agents_suggest_only": true,
+    "no_direct_file_edit": true,
+    "require_tests_before_apply": true,
+    "require_user_approval": true
+  },
+  "agents": [
+    {
+      "id": "local_reviewer",
+      "name": "Local Reviewer Agent",
+      "provider": "local",
+      "cost": "free",
+      "enabled": true,
+      "role": "risk_review"
+    },
+    {
+      "id": "groq_free",
+      "name": "Groq Free Agent",
+      "provider": "groq",
+      "cost": "free",
+      "enabled": true,
+      "role": "fast_ai_review"
+    },
+    {
+      "id": "gemini_free",
+      "name": "Gemini Free Agent",
+      "provider": "google_gemini",
+      "cost": "free",
+      "enabled": true,
+      "role": "architecture_planning"
+    },
+    {
+      "id": "openrouter_free",
+      "name": "OpenRouter Free Agent",
+      "provider": "openrouter",
+      "cost": "free",
+      "enabled": true,
+      "role": "multi_model_review"
+    }
+  ],
+  "default_strategy": "multi_agent_review"
+}

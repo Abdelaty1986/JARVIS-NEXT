@@ -1,0 +1,1685 @@
+{
+  "timestamp": "2026-05-17T20:16:40.266216+00:00",
+  "aggregator": "runtime_aggregator",
+  "bounded": true,
+  "real_apply_enabled": false,
+  "autonomous_apply": false,
+  "execution_unlock_allowed": false,
+  "runtime_count": 17,
+  "aggregation_state": "stable",
+  "aggregated_runtimes": {
+    "approval_gateway": {
+      "exists": true,
+      "data": {
+        "gateway_state": "active",
+        "latest_session": {
+          "session_id": "approval-20260513171232-84802123",
+          "approval_state": "locked",
+          "authorization_scope": "execution_preparation_only",
+          "staged_unlock_state": "locked",
+          "execution_lock_state": "locked",
+          "rollback_binding": "required",
+          "expires_at": "2026-05-13T17:42:32.955123+00:00",
+          "bounded": true,
+          "autonomous_apply": false,
+          "created_at": "2026-05-13T17:12:32.955123+00:00"
+        },
+        "governance": {
+          "human_approval_required": true,
+          "autonomous_apply_allowed": false,
+          "bounded_authorization": true,
+          "rollback_required": true,
+          "real_apply_enabled": false
+        },
+        "updated_at": "2026-05-13T18:05:04.931881+00:00"
+      }
+    },
+    "approval_lineage": {
+      "exists": true,
+      "data": {
+        "lineage_state": "active",
+        "bounded": true,
+        "autonomous_apply": false,
+        "latest_event": {
+          "event_type": "approval_transition_recorded",
+          "session_id": "approval-20260513171232-84802123",
+          "from_state": "locked",
+          "to_state": "locked",
+          "transition_allowed": false,
+          "execution_lock_state": "locked",
+          "bounded": true,
+          "autonomous_apply": false,
+          "observed_at": "2026-05-13T18:05:04.943669+00:00"
+        },
+        "events": [
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:35:12.061729+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:36:49.161904+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:40:20.799463+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:40:35.333822+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:40:50.746404+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:41:14.649744+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:41:21.431924+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:42:06.925852+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "awaiting_human_approval",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:42:09.665727+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "awaiting_human_approval",
+            "to_state": "authorized",
+            "transition_allowed": true,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:52:01.773989+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "authorized",
+            "to_state": "locked",
+            "transition_allowed": true,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:54:37.608698+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:56:09.914026+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:56:09.934431+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:56:25.497635+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:56:25.510650+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:57:49.706745+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:57:49.833976+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:57:52.931570+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:57:52.975934+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:04.016433+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:04.048636+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:06.867790+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:06.899999+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:19.394946+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:58:19.424528+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:11.762843+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:11.791552+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:11.929773+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:11.953795+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "none",
+            "approval_state": "unknown",
+            "authorization_scope": "unknown",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:36.912254+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T17:59:36.929381+00:00"
+          },
+          {
+            "event_type": "approval_session_observed",
+            "session_id": "approval-20260513171232-84802123",
+            "approval_state": "locked",
+            "authorization_scope": "execution_preparation_only",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "rollback_binding": "required",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T18:05:04.927929+00:00"
+          },
+          {
+            "event_type": "approval_transition_recorded",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "transition_allowed": false,
+            "execution_lock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "observed_at": "2026-05-13T18:05:04.943669+00:00"
+          }
+        ],
+        "event_count": 33,
+        "governance": {
+          "human_approval_required": true,
+          "execution_unlock_allowed": false,
+          "real_apply_enabled": false,
+          "rollback_trace_required": true,
+          "lineage_replay_ready": true
+        },
+        "updated_at": "2026-05-13T18:05:04.943738+00:00"
+      }
+    },
+    "approval_transition": {
+      "exists": true,
+      "data": {
+        "transition_state": "active",
+        "bounded": true,
+        "autonomous_apply": false,
+        "latest_transition": {
+          "event_type": "approval_state_transition",
+          "session_id": "approval-20260513171232-84802123",
+          "from_state": "locked",
+          "to_state": "locked",
+          "requested_target_state": "locked",
+          "transition_allowed": false,
+          "reason": "hud_observation_without_unlock",
+          "execution_lock_state": "locked",
+          "staged_unlock_state": "locked",
+          "bounded": true,
+          "autonomous_apply": false,
+          "real_apply_enabled": false,
+          "transitioned_at": "2026-05-13T18:05:04.931796+00:00"
+        },
+        "events": [
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "awaiting_human_approval",
+            "to_state": "authorized",
+            "requested_target_state": "authorized",
+            "transition_allowed": true,
+            "reason": "human_authorization_simulated_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:52:01.757830+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "authorized",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": true,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:54:37.601794+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:56:09.915828+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:56:25.497841+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:57:49.804885+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:57:52.951990+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:58:04.034491+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:58:06.887984+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:58:19.415249+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:59:11.782173+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:59:11.946448+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T17:59:36.910218+00:00"
+          },
+          {
+            "event_type": "approval_state_transition",
+            "session_id": "approval-20260513171232-84802123",
+            "from_state": "locked",
+            "to_state": "locked",
+            "requested_target_state": "locked",
+            "transition_allowed": false,
+            "reason": "hud_observation_without_unlock",
+            "execution_lock_state": "locked",
+            "staged_unlock_state": "locked",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": false,
+            "transitioned_at": "2026-05-13T18:05:04.931796+00:00"
+          }
+        ],
+        "event_count": 13,
+        "governance": {
+          "human_approval_required": true,
+          "execution_unlock_allowed": false,
+          "real_apply_enabled": false,
+          "rollback_trace_required": true,
+          "transition_replay_ready": true
+        },
+        "updated_at": "2026-05-13T18:05:04.939778+00:00"
+      }
+    },
+    "execution_journal": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "execution_journal_runtime",
+        "autonomous_apply": false,
+        "summary": {
+          "journal_id": "journal-20260513180505",
+          "objective": "safe_architecture_refactor",
+          "entries_recorded": 5,
+          "lineage_state": "persistent_execution_memory",
+          "execution_allowed": false,
+          "rollback_ready": true
+        },
+        "journal_entries": [
+          {
+            "entry_id": "journal-20260513180505-step-1",
+            "phase": "planning",
+            "task": "Generate bounded execution strategy",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "journal_state": "recorded",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "entry_id": "journal-20260513180505-step-2",
+            "phase": "reflection",
+            "task": "Validate execution coherence",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "journal_state": "recorded",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "entry_id": "journal-20260513180505-step-3",
+            "phase": "arbitration",
+            "task": "Rank execution decisions",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "journal_state": "recorded",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "entry_id": "journal-20260513180505-step-4",
+            "phase": "learning",
+            "task": "Record bounded learning signals",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "journal_state": "recorded",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "entry_id": "journal-20260513180505-step-5",
+            "phase": "failure_guard",
+            "task": "Monitor execution drift",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "journal_state": "recorded",
+            "bounded": true,
+            "autonomous_apply": false
+          }
+        ],
+        "lineage": {
+          "source_runtime": "human_approved_apply",
+          "trace_mode": "bounded_execution_trace",
+          "recovery_trace_enabled": true,
+          "audit_state": "persistent",
+          "continuity_state": "stable"
+        },
+        "notes": [
+          "Execution journal records governed runtime execution lineage.",
+          "No execution is performed automatically.",
+          "All runtime operations remain bounded and human-controlled."
+        ]
+      }
+    },
+    "safe_execution_queue": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "safe_execution_queue",
+        "autonomous_apply": false,
+        "summary": {
+          "execution_id": "exec-20260513180505",
+          "objective": "safe_architecture_refactor",
+          "queue_state": "ready_for_human_governance",
+          "queued_steps": 5,
+          "rollback_ready": true,
+          "execution_allowed": false
+        },
+        "queue": [
+          {
+            "step": 1,
+            "phase": "planning",
+            "task": "Generate bounded execution strategy",
+            "status": "queued",
+            "execution_window": "bounded",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "human_approval_required": true,
+            "execution_locked": true,
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "step": 2,
+            "phase": "reflection",
+            "task": "Validate execution coherence",
+            "status": "queued",
+            "execution_window": "bounded",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "human_approval_required": true,
+            "execution_locked": true,
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "step": 3,
+            "phase": "arbitration",
+            "task": "Rank execution decisions",
+            "status": "queued",
+            "execution_window": "bounded",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "human_approval_required": true,
+            "execution_locked": true,
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "step": 4,
+            "phase": "learning",
+            "task": "Record bounded learning signals",
+            "status": "queued",
+            "execution_window": "bounded",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "human_approval_required": true,
+            "execution_locked": true,
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "step": 5,
+            "phase": "failure_guard",
+            "task": "Monitor execution drift",
+            "status": "queued",
+            "execution_window": "bounded",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "human_approval_required": true,
+            "execution_locked": true,
+            "autonomous_apply": false,
+            "bounded": true
+          }
+        ],
+        "governance": {
+          "approval_required": true,
+          "execution_locking": true,
+          "retry_policy": "human_review_only",
+          "recovery_mode": "checkpoint_restore"
+        },
+        "notes": [
+          "Safe execution queue prepares governed execution ordering.",
+          "No queued task is executed automatically.",
+          "Execution remains human-controlled."
+        ]
+      }
+    },
+    "agent_skill_memory": {
+      "exists": true,
+      "data": {
+        "agents": {
+          "planner_agent": {
+            "role": "planning",
+            "uses": 5,
+            "successes": 5,
+            "failures": 0,
+            "best_for": [
+              "strategy_planning",
+              "safe_execution_plans"
+            ],
+            "last_score": 100.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007910Z",
+            "skills": {
+              "planning": {
+                "skill": "planning",
+                "task_types": {
+                  "runtime_strategy": {
+                    "runs": 1,
+                    "success": 1,
+                    "failure": 0
+                  }
+                },
+                "runs": 1,
+                "success": 1,
+                "failure": 0,
+                "confidence_avg": 0.82,
+                "last_result": "success",
+                "notes": [
+                  {
+                    "timestamp": "2026-05-13T18:32:08.435511+00:00",
+                    "note": "Initial bounded planning capability recorded."
+                  }
+                ]
+              }
+            },
+            "total_runs": 1,
+            "success_runs": 1,
+            "failure_runs": 0,
+            "last_seen": "2026-05-13T18:32:08.435494+00:00"
+          },
+          "reflection_agent": {
+            "role": "reflection",
+            "uses": 5,
+            "successes": 5,
+            "failures": 0,
+            "best_for": [
+              "self_review",
+              "safety_alignment"
+            ],
+            "last_score": 100.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007931Z"
+          },
+          "arbitration_agent": {
+            "role": "arbitration",
+            "uses": 4,
+            "successes": 4,
+            "failures": 0,
+            "best_for": [
+              "strategy_ranking",
+              "tradeoff_balancing"
+            ],
+            "last_score": 97.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007937Z"
+          },
+          "learning_agent": {
+            "role": "learning",
+            "uses": 3,
+            "successes": 3,
+            "failures": 0,
+            "best_for": [
+              "memory_scoring",
+              "learning_evolution"
+            ],
+            "last_score": 94.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007942Z"
+          },
+          "failure_guard_agent": {
+            "role": "failure_guard",
+            "uses": 2,
+            "successes": 2,
+            "failures": 0,
+            "best_for": [
+              "risk_memory",
+              "failure_pattern_tracking"
+            ],
+            "last_score": 91.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007947Z"
+          },
+          "reviewer_agent": {
+            "agent_id": "reviewer_agent",
+            "skills": {
+              "validation": {
+                "skill": "validation",
+                "task_types": {
+                  "runtime_review": {
+                    "runs": 1,
+                    "success": 1,
+                    "failure": 0
+                  }
+                },
+                "runs": 1,
+                "success": 1,
+                "failure": 0,
+                "confidence_avg": 0.88,
+                "last_result": "success",
+                "notes": [
+                  {
+                    "timestamp": "2026-05-13T18:32:08.440618+00:00",
+                    "note": "Initial validation capability recorded."
+                  }
+                ]
+              }
+            },
+            "total_runs": 1,
+            "success_runs": 1,
+            "failure_runs": 0,
+            "last_seen": "2026-05-13T18:32:08.440598+00:00"
+          }
+        },
+        "updated_at": "2026-05-13T18:32:08.440626+00:00"
+      }
+    },
+    "agent_routing_memory": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "dynamic_agent_routing",
+        "autonomous_apply": false,
+        "summary": {
+          "task_type": "failure_guard",
+          "agents_evaluated": 5,
+          "selected_agent": "failure_guard_agent",
+          "routing_score": 100,
+          "routing_state": "adaptive_routing_active"
+        },
+        "selected_agent": {
+          "agent_id": "failure_guard_agent",
+          "role": "failure_guard",
+          "routing_score": 100,
+          "skill_score": 91.0,
+          "best_for": [
+            "risk_memory",
+            "failure_pattern_tracking"
+          ],
+          "state": "expert"
+        },
+        "ranked_agents": [
+          {
+            "role": "failure_guard",
+            "uses": 2,
+            "successes": 2,
+            "failures": 0,
+            "best_for": [
+              "risk_memory",
+              "failure_pattern_tracking"
+            ],
+            "last_score": 91.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007947Z",
+            "agent_id": "failure_guard_agent",
+            "skill_score": 91.0,
+            "state": "expert",
+            "routing_score": 100,
+            "role_match": 1
+          },
+          {
+            "role": "planning",
+            "uses": 5,
+            "successes": 5,
+            "failures": 0,
+            "best_for": [
+              "strategy_planning",
+              "safe_execution_plans"
+            ],
+            "last_score": 100.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007910Z",
+            "agent_id": "planner_agent",
+            "skill_score": 100.0,
+            "state": "expert",
+            "routing_score": 100.0,
+            "role_match": 0
+          },
+          {
+            "role": "reflection",
+            "uses": 5,
+            "successes": 5,
+            "failures": 0,
+            "best_for": [
+              "self_review",
+              "safety_alignment"
+            ],
+            "last_score": 100.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007931Z",
+            "agent_id": "reflection_agent",
+            "skill_score": 100.0,
+            "state": "expert",
+            "routing_score": 100.0,
+            "role_match": 0
+          },
+          {
+            "role": "arbitration",
+            "uses": 4,
+            "successes": 4,
+            "failures": 0,
+            "best_for": [
+              "strategy_ranking",
+              "tradeoff_balancing"
+            ],
+            "last_score": 97.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007937Z",
+            "agent_id": "arbitration_agent",
+            "skill_score": 97.0,
+            "state": "expert",
+            "routing_score": 97.0,
+            "role_match": 0
+          },
+          {
+            "role": "learning",
+            "uses": 3,
+            "successes": 3,
+            "failures": 0,
+            "best_for": [
+              "memory_scoring",
+              "learning_evolution"
+            ],
+            "last_score": 94.0,
+            "last_state": "expert",
+            "updated_at": "2026-05-13T18:05:05.007942Z",
+            "agent_id": "learning_agent",
+            "skill_score": 94.0,
+            "state": "expert",
+            "routing_score": 94.0,
+            "role_match": 0
+          }
+        ],
+        "notes": [
+          "Dynamic routing selects the strongest agent for the requested task type.",
+          "Routing remains bounded and human-governed.",
+          "No autonomous execution is performed."
+        ]
+      }
+    },
+    "task_chain_memory": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "autonomous_task_chaining",
+        "autonomous_apply": false,
+        "summary": {
+          "objective": "safe_architecture_refactor",
+          "chain_steps": 5,
+          "routing_state": "adaptive_chain_ready",
+          "execution_mode": "bounded_planning_only"
+        },
+        "chain": [
+          {
+            "phase": "planning",
+            "task": "Generate bounded execution strategy",
+            "selected_agent": "planner_agent",
+            "routing_score": 100,
+            "state": "planned",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "reflection",
+            "task": "Review execution safety and coherence",
+            "selected_agent": "reflection_agent",
+            "routing_score": 100,
+            "state": "planned",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "arbitration",
+            "task": "Rank candidate strategies",
+            "selected_agent": "arbitration_agent",
+            "routing_score": 100,
+            "state": "planned",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "learning",
+            "task": "Record cognitive learning signals",
+            "selected_agent": "learning_agent",
+            "routing_score": 100,
+            "state": "planned",
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "failure_guard",
+            "task": "Track execution risks and drift",
+            "selected_agent": "failure_guard_agent",
+            "routing_score": 100,
+            "state": "planned",
+            "bounded": true,
+            "autonomous_apply": false
+          }
+        ],
+        "notes": [
+          "Task chaining builds bounded execution workflows.",
+          "Each phase is routed through adaptive agent selection.",
+          "No autonomous execution is performed."
+        ]
+      }
+    },
+    "task_execution_simulation": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "task_execution_simulation",
+        "autonomous_apply": false,
+        "summary": {
+          "objective": "safe_architecture_refactor",
+          "steps_simulated": 5,
+          "chain_feasibility": "high",
+          "execution_mode": "simulation_only",
+          "human_review_required": true
+        },
+        "simulated_steps": [
+          {
+            "phase": "planning",
+            "task": "Generate bounded execution strategy",
+            "selected_agent": "planner_agent",
+            "routing_score": 100,
+            "simulated_status": "ready_for_human_review",
+            "estimated_risk": "low",
+            "execution_confidence": 100,
+            "rollback_ready": true,
+            "dependency_state": "bounded_dependencies_checked",
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "phase": "reflection",
+            "task": "Review execution safety and coherence",
+            "selected_agent": "reflection_agent",
+            "routing_score": 100,
+            "simulated_status": "ready_for_human_review",
+            "estimated_risk": "low_medium",
+            "execution_confidence": 95.0,
+            "rollback_ready": true,
+            "dependency_state": "bounded_dependencies_checked",
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "phase": "arbitration",
+            "task": "Rank candidate strategies",
+            "selected_agent": "arbitration_agent",
+            "routing_score": 100,
+            "simulated_status": "ready_for_human_review",
+            "estimated_risk": "medium",
+            "execution_confidence": 90.0,
+            "rollback_ready": true,
+            "dependency_state": "bounded_dependencies_checked",
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "phase": "learning",
+            "task": "Record cognitive learning signals",
+            "selected_agent": "learning_agent",
+            "routing_score": 100,
+            "simulated_status": "ready_for_human_review",
+            "estimated_risk": "low",
+            "execution_confidence": 100,
+            "rollback_ready": true,
+            "dependency_state": "bounded_dependencies_checked",
+            "autonomous_apply": false,
+            "bounded": true
+          },
+          {
+            "phase": "failure_guard",
+            "task": "Track execution risks and drift",
+            "selected_agent": "failure_guard_agent",
+            "routing_score": 100,
+            "simulated_status": "ready_for_human_review",
+            "estimated_risk": "low_medium",
+            "execution_confidence": 95.0,
+            "rollback_ready": true,
+            "dependency_state": "bounded_dependencies_checked",
+            "autonomous_apply": false,
+            "bounded": true
+          }
+        ],
+        "notes": [
+          "Execution simulation estimates risk and readiness only.",
+          "No project files are modified.",
+          "All real execution remains human-approved."
+        ]
+      }
+    },
+    "rollback_checkpoint_memory": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "rollback_checkpoint_runtime",
+        "autonomous_apply": false,
+        "summary": {
+          "checkpoint_id": "checkpoint-20260513180505",
+          "objective": "safe_architecture_refactor",
+          "checkpoint_state": "ready",
+          "rollback_ready": true,
+          "execution_allowed": false,
+          "human_approval_required": true
+        },
+        "recovery_plan": {
+          "strategy": "bounded_restore_sequence",
+          "validation_required": true,
+          "recovery_steps": [
+            "Restore modified files",
+            "Re-run py_compile validation",
+            "Re-run endpoint smoke tests",
+            "Verify runtime integrity",
+            "Confirm bounded runtime state"
+          ]
+        },
+        "checkpoint_lineage": {
+          "source_runtime": "controlled_apply_decision",
+          "linked_objective": "safe_architecture_refactor",
+          "continuity_state": "preserved",
+          "recovery_graph_state": "stable"
+        },
+        "notes": [
+          "Rollback checkpoints prepare recovery states.",
+          "No restore execution is performed automatically.",
+          "Recovery remains human-governed."
+        ]
+      }
+    },
+    "controlled_apply_decision": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "controlled_apply_decision",
+        "autonomous_apply": false,
+        "summary": {
+          "objective": "safe_architecture_refactor",
+          "apply_decision": "ready_for_human_approval",
+          "avg_execution_confidence": 96.0,
+          "max_risk": "medium",
+          "rollback_ready": true,
+          "human_approval_required": true,
+          "execution_allowed": false
+        },
+        "approval_plan": {
+          "required": true,
+          "approval_type": "explicit_human_approval",
+          "minimum_checks": [
+            "Review simulated steps",
+            "Confirm rollback readiness",
+            "Confirm target files",
+            "Run py_compile before apply",
+            "Run endpoint smoke tests after apply"
+          ]
+        },
+        "simulation_summary": {
+          "objective": "safe_architecture_refactor",
+          "steps_simulated": 5,
+          "chain_feasibility": "high",
+          "execution_mode": "simulation_only",
+          "human_review_required": true
+        },
+        "notes": [
+          "Controlled apply decision only determines readiness.",
+          "No code changes are applied.",
+          "Execution remains disabled until explicit human approval."
+        ]
+      }
+    },
+    "human_approved_apply": {
+      "exists": true,
+      "data": {
+        "bounded": true,
+        "mode": "human_approved_apply",
+        "autonomous_apply": false,
+        "summary": {
+          "apply_id": "apply-20260513180505",
+          "objective": "safe_architecture_refactor",
+          "apply_state": "awaiting_human_approval",
+          "staged_steps": 5,
+          "execution_allowed": false,
+          "rollback_ready": true
+        },
+        "staged_execution": [
+          {
+            "phase": "planning",
+            "task": "Generate bounded execution strategy",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "execution_locked": true,
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "reflection",
+            "task": "Validate execution coherence",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "execution_locked": true,
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "arbitration",
+            "task": "Rank execution decisions",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "execution_locked": true,
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "learning",
+            "task": "Record bounded learning signals",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "execution_locked": true,
+            "bounded": true,
+            "autonomous_apply": false
+          },
+          {
+            "phase": "failure_guard",
+            "task": "Monitor execution drift",
+            "execution_state": "awaiting_human_approval",
+            "rollback_checkpoint": "checkpoint-20260513180505",
+            "execution_locked": true,
+            "bounded": true,
+            "autonomous_apply": false
+          }
+        ],
+        "governance": {
+          "human_approval_required": true,
+          "rollback_required": true,
+          "execution_locking": true,
+          "recovery_tracking": true,
+          "journal_mode": "bounded_execution_journal"
+        },
+        "notes": [
+          "Human approved apply prepares staged execution only.",
+          "No code changes are executed automatically.",
+          "All execution remains human-governed and reversible."
+        ]
+      }
+    },
+    "learning_summary": {
+      "exists": true,
+      "data": {
+        "events_recorded": 30,
+        "top_strategy": "Blueprint Extraction",
+        "top_goal": "architecture-pressure-reduction-v1",
+        "strategy_frequency": {
+          "Blueprint Extraction": 30
+        },
+        "goal_frequency": {
+          "architecture-pressure-reduction-v1": 30
+        },
+        "learning_state": "active"
+      }
+    },
+    "failure_summary": {
+      "exists": true,
+      "data": {
+        "failures_recorded": 25,
+        "top_failure_category": "runtime_validation",
+        "top_affected_component": "runtime_memory",
+        "risk_state": "stable",
+        "severity_distribution": {
+          "medium": 25
+        },
+        "failure_categories": {
+          "runtime_validation": 25
+        }
+      }
+    },
+    "agent_skill_snapshot": {
+      "exists": true,
+      "data": {
+        "snapshot_type": "agent_skill_snapshot",
+        "bounded": true,
+        "real_apply_enabled": false,
+        "agent_count": 6,
+        "scores": {
+          "planner_agent": {
+            "agent_id": "planner_agent",
+            "score": 0.946,
+            "success_rate": 1.0,
+            "avg_confidence": 0.82,
+            "total_runs": 1,
+            "state": "scored"
+          },
+          "reflection_agent": {
+            "agent_id": "reflection_agent",
+            "score": 1.0,
+            "success_rate": 1.0,
+            "legacy_score": 100.0,
+            "total_runs": 5,
+            "state": "legacy_scored"
+          },
+          "arbitration_agent": {
+            "agent_id": "arbitration_agent",
+            "score": 0.991,
+            "success_rate": 1.0,
+            "legacy_score": 97.0,
+            "total_runs": 4,
+            "state": "legacy_scored"
+          },
+          "learning_agent": {
+            "agent_id": "learning_agent",
+            "score": 0.982,
+            "success_rate": 1.0,
+            "legacy_score": 94.0,
+            "total_runs": 3,
+            "state": "legacy_scored"
+          },
+          "failure_guard_agent": {
+            "agent_id": "failure_guard_agent",
+            "score": 0.973,
+            "success_rate": 1.0,
+            "legacy_score": 91.0,
+            "total_runs": 2,
+            "state": "legacy_scored"
+          },
+          "reviewer_agent": {
+            "agent_id": "reviewer_agent",
+            "score": 0.964,
+            "success_rate": 1.0,
+            "avg_confidence": 0.88,
+            "total_runs": 1,
+            "state": "scored"
+          }
+        },
+        "updated_at": "2026-05-13T18:32:08.440626+00:00"
+      }
+    },
+    "runtime_audit": {
+      "exists": true,
+      "data": {
+        "timestamp": "2026-05-17T20:16:40.264779+00:00",
+        "audit": "runtime_audit",
+        "bounded": true,
+        "real_apply_enabled": false,
+        "autonomous_apply": false,
+        "memory_count": 14,
+        "module_count": 8,
+        "missing_memory": [],
+        "missing_modules": [],
+        "security": {
+          "execution_unlock_allowed": false,
+          "autonomous_apply_expected": false,
+          "real_apply_expected": false,
+          "unsafe_findings": [],
+          "missing_flag_notes": [],
+          "security_state": "safe_locked"
+        },
+        "duplicates": {
+          "agent_skill_layers": [
+            "JARVIS_CORE/jarvis/architecture/agent_skill_scoring_engine.py",
+            "JARVIS_CORE/jarvis/runtime/agent_skill_memory.py"
+          ],
+          "routing_layers": [
+            "JARVIS_CORE/jarvis/architecture/dynamic_agent_routing_engine.py",
+            "JARVIS_CORE/runtime_memory/agent_routing_memory.json"
+          ],
+          "note": "Duplicates here are architectural overlaps, not errors. Prefer runtime modules as unified read interfaces and architecture modules as engines."
+        },
+        "memory": {
+          "approval_gateway": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/approval_gateway.json",
+            "bounded": null,
+            "autonomous_apply": null,
+            "real_apply_enabled": null
+          },
+          "approval_lineage": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/approval_lineage.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "approval_transitions": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/approval_transitions.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "execution_journal": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/execution_journal.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "safe_execution_queue": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/safe_execution_queue.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "agent_skill_memory": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/agent_skill_memory.json",
+            "bounded": null,
+            "autonomous_apply": null,
+            "real_apply_enabled": null
+          },
+          "agent_routing_memory": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/agent_routing_memory.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "task_chain_memory": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/task_chain_memory.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "task_execution_simulation": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/task_execution_simulation.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "rollback_checkpoint_memory": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/rollback_checkpoint_memory.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "controlled_apply_decision": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/controlled_apply_decision.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "human_approved_apply": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/human_approved_apply.json",
+            "bounded": true,
+            "autonomous_apply": false,
+            "real_apply_enabled": null
+          },
+          "learning_summary": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/learning_summary.json",
+            "bounded": null,
+            "autonomous_apply": null,
+            "real_apply_enabled": null
+          },
+          "failure_summary": {
+            "exists": true,
+            "state": "ok",
+            "path": "JARVIS_CORE/runtime_memory/failure_summary.json",
+            "bounded": null,
+            "autonomous_apply": null,
+            "real_apply_enabled": null
+          }
+        },
+        "modules": {
+          "runtime_aggregator": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/runtime/runtime_aggregator.py"
+          },
+          "runtime_visibility": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/runtime/runtime_visibility.py"
+          },
+          "agent_skill_memory": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/runtime/agent_skill_memory.py"
+          },
+          "dynamic_agent_routing_engine": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/architecture/dynamic_agent_routing_engine.py"
+          },
+          "sandbox_manager": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/execution/sandbox_manager.py"
+          },
+          "sandbox_apply_simulator": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/execution/sandbox_apply_simulator.py"
+          },
+          "approval_manager": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/execution/approval_manager.py"
+          },
+          "real_apply_switch": {
+            "exists": true,
+            "path": "JARVIS_CORE/jarvis/execution/real_apply_switch.py"
+          }
+        },
+        "final_state": "stable"
+      }
+    },
+    "latest_sandbox_execution_report": {
+      "exists": false,
+      "data": {},
+      "reason": "no_sandbox_reports"
+    }
+  }
+}

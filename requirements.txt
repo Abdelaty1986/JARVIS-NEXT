@@ -1,0 +1,8 @@
+flask
+gunicorn
+werkzeug
+openpyxl
+
+python-telegram-bot
+
+google-genai

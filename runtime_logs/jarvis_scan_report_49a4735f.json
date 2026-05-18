@@ -1,0 +1,37 @@
+{
+  "scan_time": "2026-05-18 05:40:07",
+  "target": "JARVIS-CORE",
+  "scan_type": "scan_and_fix",
+  "files_scanned": 281,
+  "issues_found": [
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 692,
+      "type": "todo_fixme",
+      "text": "if \"TODO\" in stripped or \"FIXME\" in stripped or \"XXX\" in stripped:"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 717,
+      "type": "todo_fixme",
+      "text": "# If fix mode, prepare operations that clean up TODO/FIXME lines"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 739,
+      "type": "todo_fixme",
+      "text": "\"description\": f\"Review TODO/FIXME at line {issue['line']} in {issue['file']}: {"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 751,
+      "type": "todo_fixme",
+      "text": "f\"{'Fixed ' + str(fix_count) + ' TODO/FIXME issues.' if has_fix and fix_count el"
+    }
+  ],
+  "summary": {
+    "total_files_scanned": 281,
+    "total_issues_found": 4,
+    "todo_fixme_count": 4
+  }
+}

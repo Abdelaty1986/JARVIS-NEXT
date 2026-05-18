@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>هيلثي داش بورد</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Cairo',Tahoma,sans-serif;}
+body{background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.dashboard{max-width:1200px;width:100%;}
+.header{text-align:center;margin-bottom:40px;}
+.header h1{font-size:2.5em;color:#00f0ff;text-shadow:0 0 20px rgba(0,240,255,.3);}
+.header p{color:#94a3b8;margin-top:8px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px;}
+.card{background:#1e293b;border-radius:16px;padding:24px;border:1px solid rgba(0,240,255,.1);transition:transform .2s;}
+.card:hover{transform:translateY(-4px);border-color:rgba(0,240,255,.3);}
+.card .icon{font-size:2em;margin-bottom:12px;}
+.card .label{color:#94a3b8;font-size:.85em;text-transform:uppercase;letter-spacing:1px;}
+.card .value{font-size:2em;font-weight:bold;margin:8px 0;color:#00f0ff;}
+.card .progress{height:6px;background:#0f172a;border-radius:3px;overflow:hidden;margin-top:8px;}
+.card .progress .bar{height:100%;border-radius:3px;transition:width 1s;}
+.bar-water{background:#38bdf8;width:75%;}
+.bar-steps{background:#a78bfa;width:62%;}
+.bar-sleep{background:#f472b6;width:80%;}
+.bar-calories{background:#fb923c;width:55%;}
+.stats{background:#1e293b;border-radius:16px;padding:24px;border:1px solid rgba(0,240,255,.1);}
+.stats h2{color:#00f0ff;margin-bottom:16px;}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,240,255,.05);}
+.stat-row:last-child{border-bottom:none;}
+.stat-label{color:#94a3b8;}
+.stat-value{color:#e2e8f0;font-weight:bold;}
+.activities{background:#1e293b;border-radius:16px;padding:24px;margin-top:20px;border:1px solid rgba(0,240,255,.1);}
+.activities h2{color:#00f0ff;margin-bottom:16px;}
+.activity-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,240,255,.05);}
+.activity-item:last-child{border-bottom:none;}
+.activity-time{color:#64748b;font-size:.85em;}
+</style>
+</head>
+<body>
+<div class="dashboard">
+<div class="header">
+<h1>🏥 هيلثي داش بورد</h1>
+<p>نظام متابعة الصحة الشخصية</p>
+</div>
+<div class="grid">
+<div class="card"><div class="icon">🔥</div><div class="label">السعرات الحرارية</div><div class="value">1,850</div><div class="progress"><div class="bar bar-calories" style="width:55%"></div></div></div>
+<div class="card"><div class="icon">💧</div><div class="label">المياه</div><div class="value">2.1 لتر</div><div class="progress"><div class="bar bar-water" style="width:75%"></div></div></div>
+<div class="card"><div class="icon">👣</div><div class="label">الخطوات</div><div class="value">8,420</div><div class="progress"><div class="bar bar-steps" style="width:62%"></div></div></div>
+<div class="card"><div class="icon">😴</div><div class="label">النوم</div><div class="value">7.5 ساعات</div><div class="progress"><div class="bar bar-sleep" style="width:80%"></div></div></div>
+</div>
+<div class="stats"><h2>📊 إحصائيات اليوم</h2>
+<div class="stat-row"><span class="stat-label">معدل ضربات القلب</span><span class="stat-value">72 نبضة/دقيقة</span></div>
+<div class="stat-row"><span class="stat-label">ضغط الدم</span><span class="stat-value">120/80 مم زئبق</span></div>
+<div class="stat-row"><span class="stat-label">الأكسجين في الدم</span><span class="stat-value">98%</span></div>
+<div class="stat-row"><span class="stat-label">الوزن</span><span class="stat-value">75 كجم</span></div>
+<div class="stat-row"><span class="stat-label">مؤشر كتلة الجسم</span><span class="stat-value">23.4</span></div>
+</div>
+<div class="activities"><h2>⚡ النشاطات الأخيرة</h2>
+<div class="activity-item"><span>🏃 جري صباحي</span><span class="activity-time">30 دقيقة • 7:00 ص</span></div>
+<div class="activity-item"><span>🧘 يوغا</span><span class="activity-time">20 دقيقة • 12:30 م</span></div>
+<div class="activity-item"><span>🚶 مشي مسائي</span><span class="activity-time">15 دقيقة • 8:00 م</span></div>
+</div>
+</div>
+</body>
+</html>

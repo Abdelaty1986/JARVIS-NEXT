@@ -1,0 +1,67 @@
+{
+  "scan_time": "2026-05-18 05:20:05",
+  "target": "JARVIS-CORE",
+  "scan_type": "scan_and_report",
+  "files_scanned": 281,
+  "issues_found": [
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 692,
+      "type": "todo_fixme",
+      "text": "if \"TODO\" in stripped or \"FIXME\" in stripped or \"XXX\" in stripped:"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 717,
+      "type": "todo_fixme",
+      "text": "# If fix mode, create operations to fix TODOs"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 720,
+      "type": "todo_fixme",
+      "text": "# Fix up to 5 TODO/FIXME issues by removing the comment line"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 729,
+      "type": "todo_fixme",
+      "text": "# Comment out the TODO line"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 731,
+      "type": "todo_fixme",
+      "text": "lines[line_idx] = f\"# REMOVED-TODO: {old_line.strip()}\""
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 733,
+      "type": "todo_fixme",
+      "text": "lines[line_idx] = f\"# TODO-FIXED: {old_line.strip()}\""
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 742,
+      "type": "todo_fixme",
+      "text": "\"description\": f\"Addressed TODO/FIXME at line {issue['line']} in {issue['file']}"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 743,
+      "type": "todo_fixme",
+      "text": "\"expected_marker\": \"TODO-FIXED\" if not issue[\"text\"].startswith(\"#\") else \"REMOV"
+    },
+    {
+      "file": "JARVIS_CORE/jarvis/runtime/controlled_engineering_runtime.py",
+      "line": 757,
+      "type": "todo_fixme",
+      "text": "f\"{'Fixed ' + str(fix_count) + ' TODO/FIXME issues.' if has_fix and fix_count el"
+    }
+  ],
+  "summary": {
+    "total_files_scanned": 281,
+    "total_issues_found": 9,
+    "todo_fixme_count": 9
+  }
+}

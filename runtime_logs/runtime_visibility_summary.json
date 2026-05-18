@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-05-17T20:16:40.269615+00:00",
+  "visibility_runtime": "runtime_visibility_layer",
+  "bounded": true,
+  "autonomous_apply": false,
+  "real_apply_enabled": false,
+  "execution_unlock_allowed": false,
+  "aggregation_state": "stable",
+  "visible_runtime_count": 16,
+  "hidden_runtime_count": 1,
+  "visible_runtimes": [
+    "approval_gateway",
+    "approval_lineage",
+    "approval_transition",
+    "execution_journal",
+    "safe_execution_queue",
+    "agent_skill_memory",
+    "agent_routing_memory",
+    "task_chain_memory",
+    "task_execution_simulation",
+    "rollback_checkpoint_memory",
+    "controlled_apply_decision",
+    "human_approved_apply",
+    "learning_summary",
+    "failure_summary",
+    "agent_skill_snapshot",
+    "runtime_audit"
+  ],
+  "hidden_runtimes": [
+    "latest_sandbox_execution_report"
+  ],
+  "audit_summary": {
+    "audit_final_state": "stable",
+    "security_state": "safe_locked",
+    "missing_memory_count": 0,
+    "missing_modules_count": 0,
+    "duplicate_layer_notes": "Duplicates here are architectural overlaps, not errors. Prefer runtime modules as unified read interfaces and architecture modules as engines."
+  },
+  "global_runtime_state": "stable",
+  "governance": {
+    "approval_required": true,
+    "execution_locked": true,
+    "rollback_awareness": true,
+    "lineage_visibility": true,
+    "bounded_execution": true
+  }
+}
