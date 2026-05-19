@@ -59,7 +59,7 @@ body{
 .header-time{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
 
 /* Container */
-.container{padding:12px 16px 24px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.container{padding:12px 16px 24px;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 
 /* Card */
 .card{
@@ -233,6 +233,19 @@ body{
 
 /* Section divider */
 .section-divider{margin:4px 0;border:none;border-top:1px solid var(--border);opacity:0.5}
+
+/* Execution results */
+.exec-result{font-size:12px;line-height:1.6;margin-bottom:8px}
+.exec-result-label{color:var(--accent-cyan);font-weight:600}
+.exec-result-value{color:var(--text-primary);word-break:break-all;background:var(--bg-secondary);padding:4px 8px;border-radius:4px;margin:2px 0 6px;font-family:monospace;font-size:11px;max-height:120px;overflow-y:auto;white-space:pre-wrap}
+.exec-result-value.inline{padding:2px 6px;display:inline-block;max-height:none}
+.exec-result-url{color:var(--accent-green);font-weight:600;text-decoration:underline}
+.exec-files-list{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.exec-file-tag{background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--text-secondary)}
+.exec-file-tag.created{border-color:var(--accent-green);color:var(--accent-green)}
+.exec-file-tag.modified{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+.exec-ok{color:var(--accent-green)}
+.exec-fail{color:var(--accent-red)}
 </style>
 </head>
 <body>
@@ -365,6 +378,53 @@ body{
     <div id="voiceDetails" style="font-size:12px;color:var(--text-secondary)"></div>
   </div>
 
+  <!-- Execution Results -->
+  <div class="card" id="executionResultsCard" style="display:none">
+    <div class="card-header">
+      <span class="card-title">Execution Results / Inspection</span>
+      <button class="section-toggle" id="resultsToggle">hide</button>
+    </div>
+    <div id="executionResults">
+      <div class="empty-state">No execution results yet</div>
+    </div>
+  </div>
+
+  <!-- System Test / Button Diagnostics -->
+  <div class="card" id="systemTestCard">
+    <div class="card-header">
+      <span class="card-title">System Test / Button Diagnostics</span>
+      <button class="section-toggle" id="diagToggle">hide</button>
+    </div>
+    <div id="systemTestPanel">
+      <div class="status-grid" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="status-item">
+          <span class="status-item-label">Last Button</span>
+          <div class="status-item-value" id="diagLastButton" style="font-size:14px">--</div>
+        </div>
+        <div class="status-item">
+          <span class="status-item-label">Last Endpoint</span>
+          <div class="status-item-value" id="diagLastEndpoint" style="font-size:14px">--</div>
+        </div>
+        <div class="status-item">
+          <span class="status-item-label">Response</span>
+          <div class="status-item-value" id="diagResponse" style="font-size:14px">--</div>
+        </div>
+        <div class="status-item">
+          <span class="status-item-label">Last Error</span>
+          <div class="status-item-value" id="diagLastError" style="font-size:12px;color:var(--accent-red)">none</div>
+        </div>
+        <div class="status-item">
+          <span class="status-item-label">Last Task ID</span>
+          <div class="status-item-value" id="diagLastTaskId" style="font-size:11px">--</div>
+        </div>
+        <div class="status-item">
+          <span class="status-item-label">Full Cycle</span>
+          <div class="status-item-value" id="diagFullCycle" style="font-size:12px">not run</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -382,7 +442,28 @@ body{
     execute: '/jarvis/api/runtime/execute',
     approve: '/jarvis/api/execution/approve',
     run: '/jarvis/api/execution/run',
+    engExecute: '/jarvis/api/engineering/execute',
+    engApprove: '/jarvis/api/engineering/approve',
+    engApply: '/jarvis/api/engineering/apply',
+    engStatus: '/jarvis/api/engineering/status',
+    engHistory: '/jarvis/api/engineering/history',
   };
+
+  // Button diagnostics tracker
+  let diag = { lastButton: 'startup', lastEndpoint: '', lastResponse: '', lastError: '', lastTaskId: '' };
+  function trackButton(btn, endpoint, resp, err) {
+    diag.lastButton = btn;
+    diag.lastEndpoint = endpoint;
+    diag.lastResponse = resp ? (resp.ok !== undefined ? (resp.ok ? 'ok' : 'fail') : 'ok') : (err ? 'error' : 'unknown');
+    diag.lastError = err || '';
+    if (resp && resp.task_id) diag.lastTaskId = resp.task_id;
+    $('diagLastButton').textContent = diag.lastButton;
+    $('diagLastEndpoint').textContent = diag.lastEndpoint;
+    $('diagResponse').textContent = diag.lastResponse;
+    $('diagLastError').textContent = diag.lastError || 'none';
+    $('diagLastTaskId').textContent = diag.lastTaskId ? diag.lastTaskId.substring(0,12)+'...' : '--';
+    if (diag.lastTaskId && diag.lastResponse === 'ok') $('diagFullCycle').textContent = 'cycle ok';
+  }
 
   function $(id){return document.getElementById(id)}
   function show(msg,type){
@@ -505,6 +586,13 @@ body{
 
     // Render recent tasks
     renderTasks(tasks);
+
+    // Check latest completed/failed task for execution results
+    const completed = tasks.filter(t => t.status==='completed'||t.status==='failed');
+    if(completed.length>0){
+      const latest = completed[0];
+      renderExecutionResults(latest);
+    }
   }
 
   function renderTasks(tasks){
@@ -533,52 +621,131 @@ body{
     const d=document.createElement('div');d.textContent=s;return d.innerHTML;
   }
 
-  // Send command
+  // Render execution results from a completed engineering task
+  function renderExecutionResults(task) {
+    const el = $('executionResults');
+    if (!task || (task.status !== 'completed' && task.status !== 'failed')) {
+      $('executionResultsCard').style.display = 'none';
+      return;
+    }
+    $('executionResultsCard').style.display = '';
+    const ok = task.status === 'completed';
+    const created = task.created_files || [];
+    const modified = task.modified_files || [];
+    const urls = task.final_urls || [];
+    const val = task.validation || {};
+    const stdout = task.stdout || '';
+    const stderr = task.stderr || '';
+    const summary = task.final_result || task.result || '';
+    const snapId = task.rollback_snapshot_id || '';
+    const action = task.action || '';
+
+    let html = '<div class="exec-result"><span class="exec-result-label">Status:</span> <span class="'+(ok?'exec-ok':'exec-fail')+'">'+task.status+'</span></div>';
+    if (action) html += '<div class="exec-result"><span class="exec-result-label">Action:</span> <span class="exec-result-value inline">'+escHtml(action)+'</span></div>';
+    if (summary) html += '<div class="exec-result"><span class="exec-result-label">Summary:</span> <div class="exec-result-value">'+escHtml(summary)+'</div></div>';
+
+    if (urls.length) {
+      html += '<div class="exec-result"><span class="exec-result-label">Final URLs:</span><div class="exec-files-list">';
+      urls.forEach(u => { html += '<a href="'+u+'" target="_blank" class="exec-file-tag created">'+escHtml(u)+'</a>'; });
+      html += '</div></div>';
+    }
+
+    if (created.length) {
+      html += '<div class="exec-result"><span class="exec-result-label">Created Files:</span><div class="exec-files-list">';
+      created.forEach(f => { html += '<span class="exec-file-tag created">'+escHtml(f)+'</span>'; });
+      html += '</div></div>';
+    }
+
+    if (modified.length) {
+      html += '<div class="exec-result"><span class="exec-result-label">Modified Files:</span><div class="exec-files-list">';
+      modified.forEach(f => { html += '<span class="exec-file-tag modified">'+escHtml(f)+'</span>'; });
+      html += '</div></div>';
+    }
+
+    if (val.status) {
+      const vOk = val.status === 'passed';
+      html += '<div class="exec-result"><span class="exec-result-label">Validation:</span> <span class="'+(vOk?'exec-ok':'exec-fail')+'">'+val.status+'</span> <span class="exec-result-value inline">'+val.files_checked+' file(s) checked</span></div>';
+    }
+
+    if (stdout) html += '<div class="exec-result"><span class="exec-result-label">Execution Log:</span><div class="exec-result-value">'+escHtml(stdout.substring(0,2000))+'</div></div>';
+    if (stderr) html += '<div class="exec-result"><span class="exec-result-label">stderr:</span><div class="exec-result-value">'+escHtml(stderr.substring(0,1000))+'</div></div>';
+    if (snapId) html += '<div class="exec-result"><span class="exec-result-label">Rollback Snapshot:</span> <span class="exec-result-value inline">'+escHtml(snapId)+'</span></div>';
+
+    el.innerHTML = html;
+  }
+
+  // Send command (routes to engineering or execution based on command)
   async function sendCommand(){
     const input=$('commandInput');
     const cmd=input.value.trim();
     if(!cmd){show('Please enter a command','error');return}
     $('sendBtn').disabled=true;$('sendBtn').textContent='...';
-    const result=await apiPost(APIS.execute,{command:cmd,task:cmd});
+    const isEng = /create|build|modify|fix|improve|add route|add api|refactor|update template|diagnostics|feature|generate/i.test(cmd);
+    const url = isEng ? APIS.engExecute : APIS.execute;
+    const result=await apiPost(url,{command:cmd,task:cmd});
     $('sendBtn').disabled=false;$('sendBtn').textContent='Send';
-    if(result){
+    trackButton('Send', url, result, result ? '' : 'no response');
+    if(result&&result.ok){
       show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
       input.value='';
       updateTasks();
     }else{
-      show('Command failed','error');
+      show((result&&result.error)||'Command failed','error');
     }
   }
 
-  // Create Task (same as send)
+  // Create Task
   async function createTask(){
     const input=$('commandInput');
     const cmd=input.value.trim();
     if(!cmd){show('Enter a command first','error');return}
     $('createTaskBtn').disabled=true;$('createTaskBtn').textContent='...';
-    const result=await apiPost(APIS.execute,{command:cmd,task:cmd});
+    const isEng = /create|build|modify|fix|improve|add route|add api|refactor|update template|diagnostics|feature|generate/i.test(cmd);
+    const url = isEng ? APIS.engExecute : APIS.execute;
+    const result=await apiPost(url,{command:cmd,task:cmd});
     $('createTaskBtn').disabled=false;$('createTaskBtn').textContent='Create Task';
-    if(result){
+    trackButton('Create Task', url, result, result ? '' : 'no response');
+    if(result&&result.ok){
       show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
       input.value='';
       updateTasks();
     }else{
-      show('Failed to create task','error');
+      show((result&&result.error)||'Failed to create task','error');
     }
   }
 
   // Approve & Run
   async function approveRun(){
     $('approveRunBtn').disabled=true;$('approveRunBtn').textContent='...';
-    const [appResult,runResult]=await Promise.all([
-      apiPost(APIS.approve,{}),apiPost(APIS.run,{request_id:'mobile'})
-    ]);
+    // Try engineering first, fallback to execution
+    const appResult=await apiPost(APIS.engApprove,{});
+    let runResult;
+    if(appResult&&appResult.ok){
+      runResult=await apiPost(APIS.engApply,{});
+    } else {
+      const [a,r]=await Promise.all([
+        apiPost(APIS.approve,{}),apiPost(APIS.run,{request_id:'mobile'})
+      ]);
+      trackButton('Approve & Run', APIS.approve+' & '+APIS.run, r, (!a||!r)?'approve/run failed':'');
+      if(a&&r){ show('Executed','success'); updateTasks(); }
+      else { show('Approve/Run failed','error'); }
+      $('approveRunBtn').disabled=false;$('approveRunBtn').textContent='Approve & Run';
+      return;
+    }
     $('approveRunBtn').disabled=false;$('approveRunBtn').textContent='Approve & Run';
-    if(appResult&&runResult){
-      show('Approved and triggered','success');
+    trackButton('Approve & Run', APIS.engApprove+' & '+APIS.engApply, runResult, (!runResult||!runResult.ok)?'apply failed':'');
+    if(runResult&&runResult.ok){
+      show('Engineering task applied: '+runResult.summary,'success');
       updateTasks();
+      // Show execution results immediately
+      if(runResult.task_id){
+        const detail=await apiGet('/jarvis/api/engineering/task/'+runResult.task_id);
+        if(detail) renderExecutionResults(detail);
+      } else {
+        renderExecutionResults(runResult);
+      }
     }else{
-      show('Approve/Run failed','error');
+      show((runResult&&runResult.error)||'Apply failed','error');
     }
   }
 
@@ -600,6 +767,23 @@ body{
     tasksVisible=!tasksVisible;
     $('taskList').style.display=tasksVisible?'':'none';
     this.textContent=tasksVisible?'hide':'show';
+  });
+
+  // Results toggle
+  let resultsVisible=true;
+  const resultsToggle=$('resultsToggle');
+  if(resultsToggle) resultsToggle.addEventListener('click',function(){
+    resultsVisible=!resultsVisible;
+    $('executionResults').style.display=resultsVisible?'':'none';
+    this.textContent=resultsVisible?'hide':'show';
+  });
+
+  // Diag toggle
+  let diagVisible=true;
+  $('diagToggle').addEventListener('click',function(){
+    diagVisible=!diagVisible;
+    $('systemTestPanel').style.display=diagVisible?'':'none';
+    this.textContent=diagVisible?'hide':'show';
   });
 
   // Initial load

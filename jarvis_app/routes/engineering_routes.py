@@ -1,86 +1,258 @@
-from flask import Blueprint, jsonify, request
+import flask
+from flask import Blueprint, jsonify, render_template, request, current_app
+from werkzeug.routing import Rule
 from datetime import datetime
 
-from config import RUNTIME_LOGS_DIR, TEMPLATES_DIR, RUNTIME_MEMORY_DIR
-from jarvis_app.services.engineering_service import EngineeringService
+from config import RUNTIME_LOGS_DIR, RUNTIME_MEMORY_DIR, TEMPLATES_DIR
+from jarvis_app.services.task_state_service import TaskStateService
+from jarvis_app.services.engineering_execution_service import EngineeringExecutionService
+from jarvis_app.services.agent_orchestrator import AgentOrchestrator
 from jarvis_app.services.validation_service import ValidationService
-from jarvis_app.services.rollback_service import RollbackService
 
 engineering_bp = Blueprint("engineering", __name__)
-_engineering = EngineeringService(RUNTIME_LOGS_DIR)
+_task_state = TaskStateService(RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR)
+_engine = EngineeringExecutionService(RUNTIME_LOGS_DIR)
+_orch = AgentOrchestrator(RUNTIME_LOGS_DIR)
 _validation = ValidationService()
-_rollback = RollbackService(RUNTIME_LOGS_DIR)
 
 
-@engineering_bp.route("/jarvis/api/engineering/status")
-def engineering_status():
-    return jsonify({"mode": "active", "available": True})
-
-
-@engineering_bp.route("/jarvis/api/engineering/create-page", methods=["POST"])
-def engineering_create_page():
+@engineering_bp.route("/jarvis/api/engineering/execute", methods=["POST"])
+def engineering_execute():
     payload = request.json or {}
-    page_name = payload.get("page_name", "new_page")
-    content = payload.get("content")
-    output_dir = payload.get("output_dir")
-    result = _engineering.create_html_page(page_name, content=content, output_dir=output_dir)
-    return jsonify(result)
+    command = payload.get("command", "")
+    task_text = payload.get("task", command)
+
+    if not command.strip():
+        return jsonify({"ok": False, "error": "No command provided"}), 400
+
+    action = _engine.detect_action(task_text)
+    plan = _engine.create_plan(action, task_text)
+
+    task = _task_state.create(task_text, "engineering." + action)
+    agent_id = "internal_engineering"
+    _task_state.update(
+        task["task_id"],
+        selected_agent=agent_id,
+        status="parsed",
+        normalized_text=command,
+        action=action,
+        plan_summary=plan.get("plan_summary", ""),
+        plan=plan,
+    )
+    _task_state.update(task["task_id"], status="planning")
+    _task_state.update(task["task_id"], status="waiting_approval")
+    _orch.log_agent_action(agent_id, action, task["task_id"], "waiting_approval")
+
+    return jsonify({
+        "ok": True,
+        "task_id": task["task_id"],
+        "status": "waiting_approval",
+        "action": action,
+        "agent_id": agent_id,
+        "plan_summary": plan.get("plan_summary", ""),
+        "plan": plan,
+    })
 
 
-@engineering_bp.route("/jarvis/api/engineering/healthy-dashboard", methods=["POST"])
-def engineering_healthy_dashboard():
-    output_dir = (request.json or {}).get("output_dir")
-    result = _engineering.generate_healthy_dashboard(output_dir=output_dir)
-    return jsonify(result)
-
-
-@engineering_bp.route("/jarvis/api/engineering/validate", methods=["POST"])
-def engineering_validate():
+@engineering_bp.route("/jarvis/api/engineering/plan", methods=["POST"])
+def engineering_plan():
     payload = request.json or {}
-    files = payload.get("files", [])
-    return jsonify(_validation.validate_files(files))
+    command = payload.get("command", "")
+    task_id = payload.get("task_id")
 
+    if not command and not task_id:
+        return jsonify({"ok": False, "error": "Provide command or task_id"}), 400
 
-# Compatibility routes for JARVIS-STANDALONE engineering API
-@engineering_bp.route("/jarvis/api/engineering/current")
-def engineering_current():
-    from jarvis_app.services.task_state_service import TaskStateService
-    ts = TaskStateService(RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR)
-    active = ts.list_active()
-    return jsonify(active[0] if active else {
-        "patch_id": None,
-        "apply_status": "IDLE",
-        "approval_state": "none",
+    if task_id:
+        task = _task_state.get(task_id)
+        if not task:
+            return jsonify({"ok": False, "error": "Task not found"}), 404
+        plan = task.get("plan", {})
+        return jsonify({"ok": True, "plan": plan})
+
+    action = _engine.detect_action(command)
+    plan = _engine.create_plan(action, command)
+    return jsonify({
+        "ok": True,
+        "action": action,
+        "plan": plan,
     })
 
 
 @engineering_bp.route("/jarvis/api/engineering/approve", methods=["POST"])
-def engineering_approve_compat():
-    return jsonify({"ok": True, "message": "Patch approved (compatibility mode)"})
-
-
-@engineering_bp.route("/jarvis/api/engineering/reject", methods=["POST"])
-def engineering_reject_compat():
+def engineering_approve():
     payload = request.json or {}
-    reason = payload.get("reason", "")
-    return jsonify({"ok": True, "message": f"Patch rejected: {reason}"})
+    task_id = payload.get("task_id")
+
+    if task_id:
+        task = _task_state.get(task_id)
+        if not task:
+            return jsonify({"ok": False, "error": "Task not found"}), 404
+        if task.get("status") not in ("waiting_approval",):
+            return jsonify({
+                "ok": False,
+                "error": f"Task state is '{task.get('status')}', expected 'waiting_approval'"
+            }), 400
+        _task_state.update(task_id, status="approved", approval_state="approved")
+    else:
+        all_tasks = _task_state.list_all(999)
+        waiting = [t for t in all_tasks if t.get("status") == "waiting_approval"]
+        if not waiting:
+            return jsonify({"ok": False, "error": "No task waiting for approval"}), 404
+        task_id = waiting[0]["task_id"]
+        _task_state.update(task_id, status="approved", approval_state="approved")
+
+    return jsonify({
+        "ok": True,
+        "task_id": task_id,
+        "status": "approved",
+        "message": "Engineering task approved",
+    })
 
 
 @engineering_bp.route("/jarvis/api/engineering/apply", methods=["POST"])
-def engineering_apply_compat():
-    return jsonify({"ok": True, "message": "Patch applied (compatibility mode)"})
+def engineering_apply():
+    payload = request.json or {}
+    task_id = payload.get("task_id")
+
+    def _resolve():
+        nonlocal task_id
+        if task_id:
+            t = _task_state.get(task_id)
+            if not t:
+                return None, "Task not found"
+            if t.get("status") not in ("approved", "waiting_approval"):
+                return None, f"State is '{t['status']}', need 'approved' or 'waiting_approval'"
+            return t, None
+        for st in ("approved", "waiting_approval"):
+            candidates = [t for t in _task_state.list_all(999) if t.get("status") == st]
+            if candidates:
+                return candidates[0], None
+        return None, "No task ready to apply"
+
+    task, err = _resolve()
+    if err:
+        return jsonify({"ok": False, "error": err}), 404
+    if not task:
+        return jsonify({"ok": False, "error": "Task not found"}), 404
+
+    task_id = task["task_id"]
+    cur_status = task.get("status", "")
+
+    # Already completed – return existing data
+    if cur_status in ("completed", "failed", "validating", "applying"):
+        return jsonify({
+            "ok": cur_status == "completed",
+            "task_id": task_id,
+            "status": cur_status,
+            "created_files": task.get("created_files", []),
+            "modified_files": task.get("modified_files", []),
+            "final_urls": task.get("final_urls", []),
+            "validation": task.get("validation", {}),
+            "rollback_snapshot_id": task.get("rollback_snapshot_id"),
+            "stdout": task.get("stdout", ""),
+            "stderr": task.get("stderr", ""),
+            "summary": task.get("final_result", task.get("result", "")),
+        })
+
+    if cur_status == "waiting_approval":
+        _task_state.update(task_id, status="approved", approval_state="approved")
+
+    _task_state.update(task_id, status="applying")
+
+    plan = task.get("plan", {})
+    if not plan:
+        action = task.get("action") or _engine.detect_action(task.get("raw_text", ""))
+        plan = _engine.create_plan(action, task.get("raw_text", ""))
+
+    result = _engine.apply_plan(plan, task_id)
+
+    _task_state.update(task_id, status="validating")
+
+    # Register dynamic routes in the running app
+    for route_info in plan.get("dynamic_routes", []):
+        path = route_info.get("path", "")
+        template = route_info.get("template", "")
+        title = route_info.get("title", "")
+        view_func_name = route_info.get("view_func", "generic")
+
+        def _make_view(tp, tt):
+            def _view():
+                return render_template(tp, title=tt, data={"status": "online", "page": tt.lower().replace(" ", "-")})
+            _view.__name__ = view_func_name
+            return _view
+
+        # Check if route already exists
+        existing = [r for r in current_app.url_map.iter_rules() if r.rule == path]
+        if not existing:
+            endpoint_name = view_func_name + "_endpoint"
+            rule = Rule(path, endpoint=endpoint_name, methods={"GET"})
+            current_app.url_map.add(rule)
+            current_app.view_functions[endpoint_name] = _make_view(template, title)
+            result.setdefault("stdout", "")
+            result["stdout"] += f"\nRegistered route: {path}"
+
+    py_files = result.get("created_files", []) + result.get("modified_files", [])
+    py_files = [f for f in py_files if f.endswith(".py")]
+    if py_files:
+        val = _validation.validate_files(py_files)
+        result["validation"] = val
+
+    final = "completed" if result.get("ok") else "failed"
+    _task_state.update(
+        task_id,
+        status=final,
+        stdout=result.get("stdout", ""),
+        stderr=result.get("stderr", ""),
+        final_result=result.get("summary", ""),
+        created_files=result.get("created_files", []),
+        modified_files=result.get("modified_files", []),
+        final_urls=result.get("final_urls", []),
+        rollback_snapshot_id=result.get("rollback_snapshot_id"),
+        validation=result.get("validation", {}),
+    )
+
+    return jsonify({
+        "ok": result.get("ok", False),
+        "task_id": task_id,
+        "status": final,
+        "action": result.get("action", ""),
+        "created_files": result.get("created_files", []),
+        "modified_files": result.get("modified_files", []),
+        "final_urls": result.get("final_urls", []),
+        "validation": result.get("validation", {}),
+        "rollback_snapshot_id": result.get("rollback_snapshot_id"),
+        "stdout": result.get("stdout", ""),
+        "stderr": result.get("stderr", ""),
+        "summary": result.get("summary", ""),
+    })
 
 
-@engineering_bp.route("/jarvis/api/engineering/rollback", methods=["POST"])
-def engineering_rollback_compat():
-    return jsonify({"ok": True, "message": "Rollback completed (compatibility mode)"})
+@engineering_bp.route("/jarvis/api/engineering/task/<task_id>")
+def engineering_task(task_id):
+    task = _task_state.get(task_id)
+    if not task:
+        return jsonify({"ok": False, "error": "Task not found"}), 404
+    return jsonify(task)
+
+
+@engineering_bp.route("/jarvis/api/engineering/status")
+def engineering_status():
+    active = _task_state.list_active()
+    eng_active = [t for t in active if t.get("route", "").startswith("engineering.")]
+    return jsonify({
+        "mode": "active",
+        "available": True,
+        "active_tasks": len(eng_active),
+        "active_task": eng_active[0] if eng_active else None,
+    })
 
 
 @engineering_bp.route("/jarvis/api/engineering/history")
-def engineering_history_compat():
-    return jsonify({"history": []})
-
-
-@engineering_bp.route("/jarvis/api/engineering/logs")
-def engineering_logs_compat():
-    return jsonify({"logs": []})
+def engineering_history():
+    all_tasks = _task_state.list_all(100)
+    eng_tasks = [t for t in all_tasks if t.get("route", "").startswith("engineering.")]
+    return jsonify({
+        "history": eng_tasks,
+        "count": len(eng_tasks),
+    })

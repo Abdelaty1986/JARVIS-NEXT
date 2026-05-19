@@ -9,6 +9,7 @@ from config import RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR, BASE_DIR
 from jarvis_app.services.task_state_service import TaskStateService
 from jarvis_app.services.task_router import TaskRouter
 from jarvis_app.services.agent_orchestrator import AgentOrchestrator
+from jarvis_app.services.engineering_execution_service import EngineeringExecutionService
 
 execution_bp = Blueprint("execution", __name__)
 _task_state = TaskStateService(RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR)
@@ -214,6 +215,28 @@ def _action_route_report():
 # Endpoints
 # ---------------------------------------------------------------------------
 
+_engine = EngineeringExecutionService(RUNTIME_LOGS_DIR)
+
+_SAFE_ACTIONS = {"status_check", "health_check", "list_files", "read_file", "ui_report", "route_report"}
+
+
+def _is_engineering_command(text):
+    lowered = text.lower().strip()
+    # If a safe action was already detected, it's NOT engineering
+    action = _detect_action(text)
+    if action in _SAFE_ACTIONS:
+        return False
+    # Engineering triggers
+    eng_keywords = (
+        "create", "build", "make", "new page", "modify", "change", "edit",
+        "improve", "enhance", "fix", "repair", "bug", "add route",
+        "add api", "add endpoint", "refactor", "update template",
+        "update module", "diagnostics", "diagnostic", "feature",
+        "inspect runtime", "generate", "design",
+    )
+    return any(kw in lowered for kw in eng_keywords)
+
+
 @execution_bp.route("/jarvis/api/runtime/execute", methods=["POST"])
 def runtime_execute():
     payload = request.json or {}
@@ -222,6 +245,11 @@ def runtime_execute():
 
     if not command.strip():
         return jsonify({"ok": False, "error": "No command provided"}), 400
+
+    # Route engineering commands to the engineering pipeline
+    if _is_engineering_command(task_text):
+        from jarvis_app.routes.engineering_routes import engineering_execute as eng_exec
+        return eng_exec()
 
     routing = _router.route(task_text)
     task = _task_state.create(task_text, routing["route"])
