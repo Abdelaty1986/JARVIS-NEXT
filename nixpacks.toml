@@ -1,11 +1,13 @@
+providers = ["python", "node"]
+
 [phases.setup]
 nixPkgs = ["python313", "nodejs_22"]
 
 [phases.install]
 cmds = [
-  "python -m venv /app/.venv",
-  "pip install -r requirements.txt",
-  "npm install -g @opencode-ai/cli"
+  "python -m venv /app/.venv && . /app/.venv/bin/activate && pip install -r requirements.txt",
+  "npm install -g @opencode-ai/cli",
+  "which opencode"
 ]
 
 [start]
