@@ -80,20 +80,28 @@ class TaskStateService:
         self._event({"event": "task_updated", "task_id": task_id, "changes": kwargs})
         return task
 
+    def _reload(self):
+        with self._lock:
+            self._load()
+
     def get(self, task_id):
+        self._reload()
         return self._tasks.get(task_id)
 
     def list_active(self):
-        active_statuses = {"received", "routed", "waiting_approval", "approved", "running"}
+        self._reload()
+        active_statuses = {"received", "routed", "parsed", "waiting_approval", "approved", "running"}
         return [t for t in self._tasks.values() if t.get("status") in active_statuses]
 
     def list_history(self, limit=50):
+        self._reload()
         final_statuses = {"applied", "completed", "failed", "rejected", "rolled_back"}
         tasks = [t for t in self._tasks.values() if t.get("status") in final_statuses]
         tasks.sort(key=lambda t: t.get("updated_at", ""), reverse=True)
         return tasks[:limit]
 
     def list_all(self, limit=50):
+        self._reload()
         tasks = list(self._tasks.values())
         tasks.sort(key=lambda t: t.get("created_at", ""), reverse=True)
         return tasks[:limit]

@@ -37,6 +37,14 @@ def system_health():
     })
 
 
+@runtime_bp.route("/jarvis/api/runtime/task/<task_id>")
+def runtime_task_detail(task_id):
+    task = _task_state.get(task_id)
+    if not task:
+        return jsonify({"ok": False, "error": "Task not found"}), 404
+    return jsonify(task)
+
+
 @runtime_bp.route("/jarvis/api/execution/history")
 def execution_history():
     return jsonify(_task_state.list_history())
