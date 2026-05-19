@@ -1,14 +1,2 @@
-providers = ["python", "node"]
-
-[phases.setup]
-nixPkgs = ["python313", "nodejs_22"]
-
-[phases.install]
-cmds = [
-  "python -m venv /app/.venv && . /app/.venv/bin/activate && pip install -r requirements.txt",
-  "npm install -g @opencode-ai/cli",
-  "which opencode"
-]
-
-[start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"
+[variables]
+NIXPACKS_NO_CACHE = "1"
