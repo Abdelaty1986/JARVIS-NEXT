@@ -1,14 +1,14 @@
 import flask
-import subprocess
 
 from flask import Blueprint, jsonify, render_template, request, current_app
 from werkzeug.routing import Rule
 from datetime import datetime
 
-from config import RUNTIME_LOGS_DIR, RUNTIME_MEMORY_DIR, TEMPLATES_DIR, OPCODE_CLI
+from config import RUNTIME_LOGS_DIR, RUNTIME_MEMORY_DIR, TEMPLATES_DIR
 from jarvis_app.services.task_state_service import TaskStateService
 from jarvis_app.services.engineering_execution_service import EngineeringExecutionService
 from jarvis_app.services.agent_orchestrator import AgentOrchestrator
+from jarvis_app.services.opencode_service import OpenCodeService
 from jarvis_app.services.validation_service import ValidationService
 
 engineering_bp = Blueprint("engineering", __name__)
@@ -16,6 +16,7 @@ _task_state = TaskStateService(RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR)
 _engine = EngineeringExecutionService(RUNTIME_LOGS_DIR)
 _orch = AgentOrchestrator(RUNTIME_LOGS_DIR)
 _validation = ValidationService()
+_opencode = OpenCodeService(RUNTIME_LOGS_DIR)
 
 
 @engineering_bp.route("/jarvis/api/engineering/execute", methods=["POST"])
@@ -40,7 +41,8 @@ def engineering_execute():
             pass  # let the user decide via approval
 
     task = _task_state.create(task_text, "engineering." + action)
-    agent_id = "internal_engineering"
+    route_for_agent = f"engineering_{action}"
+    agent_id = _orch.select_agent(route_for_agent, task_text)
     _task_state.update(
         task["task_id"],
         selected_agent=agent_id,
@@ -257,11 +259,15 @@ def engineering_task(task_id):
 def engineering_status():
     active = _task_state.list_active()
     eng_active = [t for t in active if t.get("route", "").startswith("engineering.")]
+    oc = _opencode.health()
     return jsonify({
         "mode": "active",
         "available": True,
         "active_tasks": len(eng_active),
         "active_task": eng_active[0] if eng_active else None,
+        "opencode_available": oc.get("available", False),
+        "opencode_usable": oc.get("usable", False),
+        "opencode_version": oc.get("version"),
     })
 
 
@@ -297,26 +303,12 @@ def engineering_dry_run():
 
 @engineering_bp.route("/jarvis/api/opencode/health")
 def opencode_health():
-    import os
-    cli_path = OPCODE_CLI
-    available = os.path.isfile(cli_path) and os.access(cli_path, os.X_OK)
-    version = ""
-    if available:
-        try:
-            r = subprocess.run([cli_path, "--version"], capture_output=True, text=True, timeout=10)
-            version = (r.stdout or r.stderr or "").strip()[:50]
-        except Exception:
-            version = "check failed"
-    return jsonify({
-        "available": available,
-        "cli_path": cli_path,
-        "version": version or None,
-        "usable": available and bool(version),
-        "fallback": "internal_engineering",
-    })
+    health = _opencode.health()
+    return jsonify(health)
 
 @engineering_bp.route("/jarvis/about")
 def about_page():
     return render_template("jarvis/about.html",
                            title="About",
                            data={"status": "online", "page": "about", "source": "engineering"})
+

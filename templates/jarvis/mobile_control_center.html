@@ -738,15 +738,59 @@ body{
     }
     $('opencodeCard').style.display = '';
     const avail = result.available;
+    const cliWorks = result.cli_works;
     const usable = result.usable;
     const version = result.version || 'N/A';
     const fallback = result.fallback || 'internal_engineering';
+    const healthTime = result.last_health_time || '';
+    const lastError = result.last_error || '';
+    const errs = result.errors || [];
+    const whichOk = result.which_resolves;
+    const inPath = result.in_path;
+    const realPath = result.real_path || '';
+    const pathCount = result.path_dirs_count || 0;
+    const vc = result.version_check || {};
+    const hasCreds = result.has_credentials;
+
     let html = '<div class="exec-result">';
-    html += '<span class="exec-result-label">CLI:</span> <span class="'+(avail?'exec-ok':'exec-fail')+'">'+(avail?'Found':'Not found')+'</span>';
+    html += '<span class="exec-result-label">CLI:</span> <span class="'+(cliWorks?'exec-ok':'exec-fail')+'">'+(cliWorks?'Operational':'Not found')+'</span>';
     html += ' <span class="exec-result-value inline">'+escHtml(result.cli_path)+'</span></div>';
-    html += '<div class="exec-result"><span class="exec-result-label">Usable:</span> <span class="'+(usable?'exec-ok':'exec-fail')+'">'+(usable?'Yes':'No')+'</span></div>';
-    html += '<div class="exec-result"><span class="exec-result-label">Version:</span> <span class="exec-result-value inline">'+escHtml(version)+'</span></div>';
-    html += '<div class="exec-result"><span class="exec-result-label">Fallback:</span> <span class="exec-result-value inline">'+escHtml(fallback)+'</span></div>';
+
+    html += '<div class="exec-result"><span class="exec-result-label">Version:</span> <span class="exec-result-value inline">'+escHtml(version)+'</span>';
+    html += ' <span class="exec-result-label" style="margin-left:12px">Resolves:</span> <span class="'+(whichOk?'exec-ok':'exec-fail')+'">'+(whichOk?'Yes':'No')+'</span></div>';
+
+    html += '<div class="exec-result"><span class="exec-result-label">Real Path:</span> <span class="exec-result-value inline">'+escHtml(realPath)+'</span></div>';
+
+    html += '<div class="exec-result"><span class="exec-result-label">Subprocess:</span> ';
+    if (vc.returncode === 0) {
+      html += '<span class="exec-ok">exit=0, stdout='+escHtml(vc.stdout||'')+'</span>';
+    } else if (vc.timed_out) {
+      html += '<span class="exec-fail">timed out</span>';
+    } else if (vc.error) {
+      html += '<span class="exec-fail">'+escHtml(vc.error)+'</span>';
+    } else {
+      html += '<span class="exec-fail">exit='+vc.returncode+', stderr='+escHtml(vc.stderr||'')+'</span>';
+    }
+    html += '</div>';
+
+    html += '<div class="exec-result"><span class="exec-result-label">Credentials:</span> <span class="'+(hasCreds?'exec-ok':'exec-fail')+'">'+(hasCreds?'Configured':'None')+'</span>';
+    if (!hasCreds) html += ' <span style="font-size:11px;color:var(--text-muted)">(run opencode providers login)</span>';
+    html += '</div>';
+
+    html += '<div class="exec-result"><span class="exec-result-label">Engine:</span> <span class="'+(usable?'exec-ok':'exec-fail')+'">'+(usable?'OpenCode (primary)':'Internal (fallback)')+'</span>';
+    html += ' <span class="exec-result-value inline">fallback='+escHtml(fallback)+'</span></div>';
+
+    if (healthTime) {
+      const t = new Date(healthTime).toLocaleTimeString();
+      html += '<div class="exec-result"><span class="exec-result-label">Last Check:</span> <span class="exec-result-value inline">'+escHtml(t)+'</span></div>';
+    }
+    if (lastError) {
+      html += '<div class="exec-result"><span class="exec-result-label">Last Error:</span> <span class="exec-fail">'+escHtml(lastError)+'</span></div>';
+    }
+    if (errs.length) {
+      html += '<div class="exec-result"><span class="exec-result-label">Errors:</span> <span class="exec-fail">'+escHtml(errs.join('; '))+'</span></div>';
+    }
+
     el.innerHTML = html;
   }
 

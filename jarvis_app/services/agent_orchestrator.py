@@ -82,40 +82,46 @@ class AgentOrchestrator:
             opc = os.environ.get("OPCODE_CLI", "/usr/local/bin/opencode")
         except Exception:
             opc = "/usr/local/bin/opencode"
+        detail = {"executable_path": opc}
         if os.path.isfile(opc) and os.access(opc, os.X_OK):
             try:
                 r = subprocess.run([opc, "--version"], capture_output=True, text=True, timeout=10)
                 version = (r.stdout or r.stderr or "").strip()[:50]
-                # Try a status command to verify it's truly usable
-                usable = False
-                try:
-                    s = subprocess.run([opc, "--status"], capture_output=True, text=True, timeout=10)
-                    usable = s.returncode == 0
-                except Exception:
-                    usable = bool(version)
-                self._agents["opencode_engineering"]["status"] = "available" if usable else "unavailable"
-                self._agents["opencode_engineering"]["version"] = version
-                self._agents["opencode_engineering"]["executable_path"] = opc
-                self._agents["opencode_engineering"]["error"] = "" if usable else "CLI found but not usable (no provider configured)"
-            except Exception:
-                self._agents["opencode_engineering"]["status"] = "error"
-                self._agents["opencode_engineering"]["error"] = "Version check failed"
+                detail["version"] = version
+                if r.returncode == 0 and version:
+                    # CLI works -- mark available regardless of provider config
+                    self._agents["opencode_engineering"]["status"] = "available"
+                    detail["error"] = ""
+                else:
+                    self._agents["opencode_engineering"]["status"] = "unavailable"
+                    detail["error"] = f"Version check exit={r.returncode}: {r.stderr[:100]}"
+            except subprocess.TimeoutExpired:
+                self._agents["opencode_engineering"]["status"] = "unavailable"
+                detail["error"] = "Version check timed out"
+            except Exception as e:
+                self._agents["opencode_engineering"]["status"] = "unavailable"
+                detail["error"] = f"Version check failed: {e}"
         else:
             self._agents["opencode_engineering"]["status"] = "unavailable"
-            self._agents["opencode_engineering"]["error"] = "CLI not detected"
+            detail["error"] = "CLI not detected"
+        self._agents["opencode_engineering"].update(detail)
 
     def list_agents(self):
         return list(self._agents.values())
 
     def select_agent(self, route, task_text=""):
         is_ar = has_arabic(task_text)
-        if route in ("engineering_create_file", "engineering_create_project",
-                     "engineering_modify_existing", "engineering_fix",
-                     "engineering_refactor", "opencode_engineering"):
+        if route in ("engineering_create_file", "engineering_create_page",
+                     "engineering_create_project", "engineering_create_feature",
+                     "engineering_modify_existing", "engineering_modify_page",
+                     "engineering_fix", "engineering_fix_bug",
+                     "engineering_refactor", "engineering_refactor_file",
+                     "engineering_add_route", "engineering_add_api_endpoint",
+                     "engineering_update_template", "engineering_improve_ui",
+                     "engineering_generate_diagnostics", "engineering_run_validation",
+                     "engineering_inspect_runtime", "opencode_engineering"):
             if self._agents.get("opencode_engineering", {}).get("status") == "available":
                 return "opencode_engineering"
-            if route == "engineering_create_file":
-                return "internal_engineering"
             return "internal_engineering"
         if route == "engineering_scan_report":
             return "research"
