@@ -1,2243 +1,613 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>JARVIS CORE — Futuristic HUD</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- ============================================================
-     JARVIS CORE — Futuristic Sci-Fi HUD Dashboard
-     Design: Cyberpunk/Sci-Fi HUD, dense panel layout
-     Colors:  #00f0ff cyan · #0a2a4a panel · #ff0044 red accent · #00ff88 green
-     -------------------------------------------------------
-     Layout:
-       HEADER  : JARVIS CORE branding + clock + live badge
-       BODY    : 3-column grid
-         LEFT    : Control Center · Runtime Overview · Active Tasks · Voice Command
-         CENTER  : "I AM JARVIS" · AI Hologram · Core Identity · Capabilities · Learning Status
-         RIGHT   : Agent Society · Project Overview · System Log
-       BOTTOM  : Fixed command dock (6 buttons)
-     -------------------------------------------------------
-     Data source: /jarvis/mobile/api/status + /jarvis/api/execution/*
-     Safe Mode : All buttons safe; approval required for execution
-     ============================================================ -->
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>JARVIS Mobile Control Center</title>
 <style>
-/* ===== RESET ===== */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-/* ===== BASE ===== */
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --bg-card-hover: #252b33;
+  --border: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-cyan: #00d4ff;
+  --accent-green: #00e676;
+  --accent-orange: #ff9100;
+  --accent-red: #ff1744;
+  --accent-purple: #d500f9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
 body{
-  margin:0;min-height:100vh;
-  background:#03080e;
-  color:#b8e2f2;
-  font-family:'Segoe UI','Cairo','Tahoma',system-ui,sans-serif;
-  overflow-x:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
+  background:var(--bg-primary);color:var(--text-primary);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+  padding-bottom:80px;
+  min-height:100vh;
 }
-/* Vignette overlay */
-body::after{
-  content:'';position:fixed;inset:0;
-  background:radial-gradient(ellipse at 50% 30%,transparent 30%,rgba(0,0,0,.7) 100%);
-  pointer-events:none;z-index:9999;
-}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg-secondary)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-/* ===== GRID BACKGROUND ===== */
-.hud-bg{
-  position:fixed;inset:0;
-  background:
-    linear-gradient(rgba(0,240,255,.035) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,240,255,.035) 1px,transparent 1px);
-  background-size:50px 50px,50px 50px;
-  pointer-events:none;z-index:0;
-}
-/* Radar glow spot */
-.hud-bg::after{
-  content:'';position:absolute;
-  top:20%;left:50%;transform:translateX(-50%);
-  width:600px;height:600px;
-  background:radial-gradient(circle,rgba(0,240,255,.06),transparent 70%);
-  pointer-events:none;
-}
-
-/* ===== SCROLL ===== */
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:rgba(0,240,255,.03)}
-::-webkit-scrollbar-thumb{background:rgba(0,240,255,.25);border-radius:3px}
-
-/* ===== APP ===== */
-.app{
-  position:relative;z-index:1;
-  max-width:1380px;margin:0 auto;padding:6px;
-  padding-bottom:92px;
-}
-
-/* ================================================================
-   HEADER — JARVIS CORE + status + time
-   ================================================================ */
+/* Header */
 .header{
-  position:relative;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 24px;margin-bottom:8px;
-  border:1px solid rgba(0,240,255,.15);
-  background:linear-gradient(90deg,rgba(0,20,40,.6),rgba(0,8,20,.4),rgba(0,20,40,.6));
-  box-shadow:0 0 30px rgba(0,240,255,.05);
-  overflow:hidden;
+  position:sticky;top:0;z-index:100;
+  background:var(--bg-secondary);border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
 }
-/* Top scan line */
-.header::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,#00f0ff,transparent);
-  animation:scanLine 4s linear infinite;
-}
-@keyframes scanLine{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(100%)}
-}
-.header-brand{
-  display:flex;align-items:center;gap:16px;
-}
+.header-left{display:flex;align-items:center;gap:10px}
 .header-logo{
-  width:44px;height:44px;
-  border:2px solid #00f0ff;
-  border-radius:50%;
+  width:32px;height:32px;border-radius:50%;
+  background:conic-gradient(var(--accent-cyan),var(--accent-purple),var(--accent-cyan));
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;font-weight:700;font-family:monospace;
-  color:#00f0ff;
-  box-shadow:0 0 20px rgba(0,240,255,.3);
-  animation:logoPulse 2s ease-in-out infinite;
+  font-size:14px;font-weight:700;color:#000;
 }
-@keyframes logoPulse{
-  0%,100%{box-shadow:0 0 20px rgba(0,240,255,.3)}
-  50%{box-shadow:0 0 40px rgba(0,240,255,.6)}
-}
-.header-brand-text h1{
-  font-size:28px;font-weight:700;letter-spacing:8px;text-transform:uppercase;
-  color:#e4faff;
-  text-shadow:0 0 15px rgba(0,240,255,.5),0 0 60px rgba(0,240,255,.15);
-}
-.header-brand-text .sub{
-  font-size:10px;letter-spacing:4px;text-transform:uppercase;
-  color:rgba(0,240,255,.4);
-}
-.header-right{
-  display:flex;align-items:center;gap:18px;
-}
-.header-clock{
-  font-size:14px;font-family:monospace;letter-spacing:3px;
-  color:rgba(0,240,255,.6);
-  border:1px solid rgba(0,240,255,.12);
-  padding:6px 16px;
-}
+.header-title{font-size:16px;font-weight:600;color:var(--accent-cyan)}
 .header-badge{
-  display:flex;align-items:center;gap:8px;
-  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  font-size:10px;padding:2px 8px;border-radius:10px;
+  background:rgba(0,230,118,0.15);color:var(--accent-green);
+  border:1px solid rgba(0,230,118,0.3);
 }
-.badge-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:#00ff88;
-  box-shadow:0 0 12px #00ff88;
-  animation:blink 1.5s ease-in-out infinite;
-}
-@keyframes blink{
-  0%,100%{opacity:1}
-  50%{opacity:.25}
-}
+.header-time{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
 
-/* ================================================================
-   3-COLUMN LAYOUT
-   ================================================================ */
-.body{
-  display:grid;
-  grid-template-columns:300px 1fr 300px;
-  gap:8px;
-}
+/* Container */
+.container{padding:12px 16px 24px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 
-/* ================================================================
-   PANEL (shared card style)
-   ================================================================ */
-.panel{
-  border:1px solid rgba(0,240,255,.1);
-  background:linear-gradient(180deg,rgba(0,16,32,.55),rgba(0,6,14,.5));
-  padding:12px;
-  margin-bottom:8px;
-  position:relative;
-  box-shadow:0 0 12px rgba(0,240,255,.02);
+/* Card */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow);
 }
-/* Red corner accents — top-right + bottom-left */
-.panel::before{
-  content:'';position:absolute;top:-1px;right:-1px;
-  width:20px;height:20px;
-  border-top:2px solid rgba(255,0,68,.6);
-  border-right:2px solid rgba(255,0,68,.6);
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
 }
-.panel::after{
-  content:'';position:absolute;bottom:-1px;left:-1px;
-  width:20px;height:20px;
-  border-bottom:2px solid rgba(255,0,68,.6);
-  border-left:2px solid rgba(255,0,68,.6);
-}
-.panel-title{
-  font-size:10px;font-weight:600;text-transform:uppercase;
-  letter-spacing:3px;color:#00f0ff;
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:2px;
-}
-.panel-title .badge{
-  font-size:8px;padding:1px 6px;
-  border:1px solid rgba(0,240,255,.2);
-  color:rgba(0,240,255,.5);
-}
-.panel-sub{
-  font-size:9px;color:rgba(0,240,255,.35);
-  letter-spacing:2px;text-transform:uppercase;
-  margin-bottom:8px;padding-bottom:6px;
-  border-bottom:1px solid rgba(0,240,255,.05);
-}
+.card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+.card-value{font-size:13px;color:var(--text-primary)}
 
-/* ================================================================
-   LEFT COLUMN
-   ================================================================ */
+/* Status Grid */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.status-item{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;display:flex;flex-direction:column;gap:4px;min-height:72px;
+  transition:border-color 0.2s;
+}
+.status-item-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px}
+.status-item-value{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.status-item-sub{font-size:11px;color:var(--text-secondary);margin-top:auto}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.status-dot.online{background:var(--accent-green);box-shadow:0 0 6px var(--accent-green)}
+.status-dot.offline{background:var(--accent-red);box-shadow:0 0 6px var(--accent-red)}
+.status-dot.warning{background:var(--accent-orange);box-shadow:0 0 6px var(--accent-orange)}
+.status-dot.idle{background:var(--text-muted)}
 
-/* -- Control Center -- */
-.ctrl-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:5px;
+/* Agent list */
+.agent-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.agent-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;border-radius:var(--radius-sm);
+  background:var(--bg-secondary);font-size:12px;
 }
-.ctrl-cell{
-  padding:7px 8px;
-  border:1px solid rgba(0,240,255,.06);
-  background:rgba(0,240,255,.015);
-}
-.ctrl-cell .lbl{
-  font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(0,240,255,.4);
-}
-.ctrl-cell .val{
-  font-size:13px;font-weight:600;color:#d0f0ff;
-  margin-top:3px;display:flex;align-items:center;gap:6px;
-}
-.ctrl-cell .val .dot{
-  width:6px;height:6px;border-radius:50%;display:inline-block;
-}
-.ctrl-cell .val .dot.gr{background:#00ff88;box-shadow:0 0 8px #00ff88}
-.ctrl-cell .val .dot.cy{background:#00f0ff;box-shadow:0 0 8px #00f0ff}
-.ctrl-cell .val .dot.rd{background:#ff0044;box-shadow:0 0 8px #ff0044}
+.agent-name{color:var(--text-primary);font-weight:500}
+.agent-status{font-size:11px;padding:1px 8px;border-radius:8px}
+.agent-status.available{background:rgba(0,230,118,0.12);color:var(--accent-green)}
+.agent-status.unavailable{background:rgba(255,23,68,0.12);color:var(--accent-red)}
+.agent-status.checking{background:rgba(255,145,0,0.12);color:var(--accent-orange)}
 
-/* -- Runtime Overview -- */
-.run-metrics{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+/* Command input */
+.command-area{display:flex;flex-direction:column;gap:8px}
+.command-input-group{display:flex;gap:8px}
+.command-input{
+  flex:1;padding:12px 14px;border-radius:var(--radius-sm);
+  background:var(--bg-secondary);border:1px solid var(--border);
+  color:var(--text-primary);font-size:14px;outline:none;
+  transition:border-color 0.2s;
 }
-.run-m{
-  text-align:center;padding:7px 4px;
-  border:1px solid rgba(0,240,255,.05);
+.command-input:focus{border-color:var(--accent-cyan)}
+.command-input::placeholder{color:var(--text-muted)}
+.btn{
+  padding:10px 16px;border:none;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;white-space:nowrap;
 }
-.run-m .num{
-  font-size:20px;font-weight:700;color:#00f0ff;
-  text-shadow:0 0 10px rgba(0,240,255,.2);
-  font-family:monospace;
+.btn:active{transform:scale(0.96)}
+.btn-primary{background:var(--accent-cyan);color:#000}
+.btn-primary:hover{background:#00b8e6}
+.btn-success{background:var(--accent-green);color:#000}
+.btn-success:hover{background:#00c853}
+.btn-warning{background:var(--accent-orange);color:#000}
+.btn-warning:hover{background:#e68200}
+.btn-outline{
+  background:transparent;border:1px solid var(--border);color:var(--text-secondary);
 }
-.run-m .lbl{
-  font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(0,240,255,.35);margin-top:2px;
-}
+.btn-outline:hover{background:var(--bg-card-hover);color:var(--text-primary)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.btn-full{width:100%}
+.btn-group{display:flex;gap:8px}
+.btn-group .btn{flex:1}
 
-/* -- Active Tasks -- */
-.task-feed{display:flex;flex-direction:column;gap:3px;margin-top:4px;max-height:140px;overflow-y:auto;}
-.task-row{
-  display:flex;align-items:center;gap:8px;
-  padding:5px 6px;font-size:11px;
-  border-left:2px solid rgba(0,240,255,.15);
-  background:rgba(0,240,255,.01);
+/* Task timeline */
+.task-timeline{display:flex;flex-direction:column;gap:0;padding:0}
+.timeline-step{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 0;position:relative;
 }
-.task-row .mark{
-  width:5px;height:5px;border-radius:50%;flex-shrink:0;
+.timeline-step:not(:last-child)::after{
+  content:'';position:absolute;left:10px;top:28px;bottom:-4px;
+  width:2px;background:var(--border);
 }
-.task-row .mark.go{background:#00f0ff;box-shadow:0 0 6px #00f0ff}
-.task-row .mark.ok{background:#00ff88;box-shadow:0 0 6px #00ff88}
-.task-row .mark.wa{background:#ffaa00;box-shadow:0 0 6px #ffaa00}
-.task-row .nm{flex:1;color:#a0d4e8}
-.task-row .pc{font-size:9px;color:rgba(0,240,255,.3)}
-
-/* -- Voice Command -- */
-.vox{text-align:center;padding:6px 0;}
-.vox-wave{
-  height:28px;margin:6px 0;
-  background:repeating-linear-gradient(90deg,
-    transparent 0 5px,
-    rgba(0,240,255,.5) 6px 8px,
-    transparent 9px 14px);
-  filter:drop-shadow(0 0 6px #00f0ff);
-  opacity:.5;
-}
-.vox-circle{
-  width:56px;height:56px;margin:5px auto;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:20px;font-family:monospace;font-weight:bold;color:#fff;
-  background:radial-gradient(circle,#00f0ff,#0055aa 55%,#001a44);
-  box-shadow:0 0 28px rgba(0,240,255,.4);
-  animation:logoPulse 2.5s ease-in-out infinite;
-}
-.vox-status{
-  font-size:10px;color:rgba(0,240,255,.5);margin-top:4px;letter-spacing:2px;
-}
-
-/* ================================================================
-   CENTER COLUMN — I AM JARVIS + Hologram + Identity + Capabilities + Learning
-   ================================================================ */
-.center-col .panel{
-  margin-bottom:6px;
-}
-
-/* -- I AM JARVIS section (top of center) -- */
-.hero-section{
-  text-align:center;padding:10px 8px 6px;
-  border-bottom:1px solid rgba(0,240,255,.06);margin-bottom:6px;
-}
-.hero-glitch{
-  font-size:38px;font-weight:900;letter-spacing:12px;
-  color:#eaffff;
-  text-shadow:0 0 20px rgba(0,240,255,.5),0 0 60px rgba(0,240,255,.15);
-  position:relative;
-  display:inline-block;
-}
-/* Glitch pseudo */
-.hero-glitch::before{
-  content:attr(data-text);
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  color:#ff0044;z-index:-1;
-  animation:glitch1 3s infinite;
-}
-@keyframes glitch1{
-  0%,90%,100%{transform:translate(0);opacity:0}
-  92%{transform:translate(-2px,1px);opacity:.6}
-  94%{transform:translate(2px,-1px);opacity:.4}
-  96%{transform:translate(-1px,2px);opacity:.5}
-}
-.hero-sub{
-  font-size:11px;letter-spacing:6px;text-transform:uppercase;
-  color:rgba(0,240,255,.4);margin-top:2px;
-}
-
-/* -- AI Hologram (circular radar animation) -- */
-.holo-wrap{
-  display:flex;justify-content:center;padding:8px 0;
-}
-.holo{
-  width:200px;height:200px;border-radius:50%;position:relative;
+.timeline-dot{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--border);background:var(--bg-card);
+  font-size:9px;color:var(--text-muted);transition:all 0.3s;
+  z-index:1;
 }
-/* Outer radar ring */
-.holo::before{
-  content:'';position:absolute;inset:0;border-radius:50%;
-  border:2px solid rgba(0,240,255,.2);
-  box-shadow:0 0 30px rgba(0,240,255,.1),inset 0 0 30px rgba(0,240,255,.05);
-  animation:holoSpin 12s linear infinite;
+.timeline-step.active .timeline-dot{
+  border-color:var(--accent-cyan);background:rgba(0,212,255,0.15);
+  color:var(--accent-cyan);box-shadow:0 0 8px rgba(0,212,255,0.3);
 }
-.holo::after{
-  content:'';position:absolute;inset:12px;border-radius:50%;
-  border:1px solid rgba(0,240,255,.15);
-  border-top:2px solid rgba(0,240,255,.4);
-  animation:holoSpin 8s linear reverse infinite;
+.timeline-step.completed .timeline-dot{
+  border-color:var(--accent-green);background:rgba(0,230,118,0.15);
+  color:var(--accent-green);
 }
-@keyframes holoSpin{to{transform:rotate(360deg)}}
+.timeline-step.failed .timeline-dot{
+  border-color:var(--accent-red);background:rgba(255,23,68,0.15);
+  color:var(--accent-red);
+}
+.timeline-step.failed .timeline-label{color:var(--accent-red)}
+.timeline-label{font-size:12px;color:var(--text-secondary);flex:1}
+.timeline-step.active .timeline-label{color:var(--text-primary);font-weight:500}
+.timeline-count{font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:1px 8px;border-radius:8px}
 
-/* Radar sweep */
-.holo-sweep{
-  position:absolute;inset:24px;border-radius:50%;
-  border:1px dashed rgba(0,240,255,.1);
+/* Task list */
+.task-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
+.task-item{
+  display:flex;flex-direction:column;gap:4px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  background:var(--bg-secondary);font-size:12px;
+  border-left:3px solid var(--border);
 }
-.holo-sweep::before{
-  content:'';position:absolute;top:-2px;left:50%;
-  width:4px;height:50%;border-radius:0 0 4px 4px;
-  background:linear-gradient(to bottom,rgba(0,240,255,.6),transparent);
-  transform-origin:50% 100%;
-  animation:sweep 3s linear infinite;
-  box-shadow:0 0 12px rgba(0,240,255,.3);
+.task-item .task-text{color:var(--text-primary);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.task-item .task-meta{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text-muted)}
+.task-item .task-status{
+  font-size:10px;padding:1px 6px;border-radius:6px;
+  text-transform:uppercase;letter-spacing:0.3px;
 }
-@keyframes sweep{
-  0%{transform:rotate(0deg)}
-  100%{transform:rotate(360deg)}
-}
+.task-status.pending{background:rgba(255,145,0,0.12);color:var(--accent-orange)}
+.task-status.running{background:rgba(0,212,255,0.12);color:var(--accent-cyan)}
+.task-status.completed{background:rgba(0,230,118,0.12);color:var(--accent-green)}
+.task-status.failed{background:rgba(255,23,68,0.12);color:var(--accent-red)}
+.task-status.approval{background:rgba(213,0,249,0.12);color:var(--accent-purple)}
+.task-item.status-received{border-left-color:var(--text-muted)}
+.task-item.status-routed{border-left-color:var(--accent-orange)}
+.task-item.status-waiting_approval{border-left-color:var(--accent-purple)}
+.task-item.status-running{border-left-color:var(--accent-cyan)}
+.task-item.status-completed{border-left-color:var(--accent-green)}
+.task-item.status-failed{border-left-color:var(--accent-red)}
 
-/* Inner rings */
-.holo-inner1{
-  position:absolute;inset:48px;border-radius:50%;
-  border:2px solid rgba(0,240,255,.08);
-  animation:holoSpin 20s linear infinite;
+/* Voice preview */
+.voice-indicator{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary)}
+.voice-wave{display:flex;align-items:center;gap:2px;height:20px}
+.voice-wave span{
+  width:3px;background:var(--accent-cyan);border-radius:2px;
+  animation:wave 0.8s ease-in-out infinite;
 }
-.holo-inner2{
-  position:absolute;inset:64px;border-radius:50%;
-  border:1px solid rgba(0,240,255,.05);
-  border-bottom:2px solid rgba(0,240,255,.15);
-  animation:holoSpin 15s linear reverse infinite;
-}
-/* Center core — AI face symbol */
-.holo-core{
-  position:relative;z-index:2;
-  width:60px;height:60px;border-radius:50%;
-  border:2px solid rgba(0,240,255,.3);
-  display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(circle,rgba(0,240,255,.12),transparent 70%);
-  box-shadow:0 0 40px rgba(0,240,255,.15),inset 0 0 30px rgba(0,240,255,.05);
-  font-size:24px;font-weight:bold;font-family:monospace;
-  color:#00f0ff;letter-spacing:2px;
-}
-.holo-core::before{
-  content:'';position:absolute;inset:-8px;border-radius:50%;
-  border:1px solid rgba(0,240,255,.08);
-  animation:holoSpin 10s linear infinite;
-}
+.voice-wave span:nth-child(2){animation-delay:0.1s;height:12px}
+.voice-wave span:nth-child(3){animation-delay:0.2s;height:8px}
+.voice-wave span:nth-child(4){animation-delay:0.3s;height:14px}
+.voice-wave span:nth-child(5){animation-delay:0.4s;height:10px}
+.voice-wave span:nth-child(1){height:16px}
+@keyframes wave{0%,100%{transform:scaleY(0.5)}50%{transform:scaleY(1)}}
 
-/* -- Core Identity -- */
-.identity-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;
-}
-.id-item{
-  padding:5px 8px;
-  border:1px solid rgba(0,240,255,.05);
-  background:rgba(0,240,255,.01);
-}
-.id-item .id-lbl{
-  font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(0,240,255,.35);
-}
-.id-item .id-val{
-  font-size:12px;color:#c0e4f0;margin-top:2px;font-family:monospace;
-}
-
-/* -- Capabilities -- */
-.caps-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0;
-}
-.cap-item{
-  text-align:center;padding:6px 2px;
-  border:1px solid rgba(0,240,255,.06);
-  cursor:default;transition:all .15s;
-}
-.cap-item:hover{
-  border-color:rgba(0,240,255,.25);
-  background:rgba(0,240,255,.04);
-}
-.cap-item .cap-icon{
-  font-size:13px;color:#00f0ff;font-family:monospace;
-}
-.cap-item .cap-lbl{
-  font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(0,240,255,.4);margin-top:2px;
-}
-
-/* -- Learning Status -- */
-.learn-section{margin-top:6px;}
-.learn-bar{margin:5px 0;}
-.learn-bar .lb-hdr{
-  display:flex;justify-content:space-between;
-  font-size:9px;color:rgba(0,240,255,.5);margin-bottom:2px;
-}
-.learn-bar .lb-track{
-  height:4px;background:rgba(0,240,255,.06);border-radius:2px;overflow:hidden;
-}
-.learn-bar .lb-fill{
-  height:100%;border-radius:2px;
-  transition:width 1s ease;
-}
-.lb-fill.cy{background:#00f0ff;box-shadow:0 0 8px rgba(0,240,255,.3);}
-.lb-fill.gr{background:#00ff88;box-shadow:0 0 8px rgba(0,255,136,.3);}
-.lb-fill.yl{background:#ffaa00;box-shadow:0 0 8px rgba(255,170,0,.2);}
-.lb-fill.rd{background:#ff0044;box-shadow:0 0 8px rgba(255,0,68,.2);}
-
-/* ================================================================
-   RIGHT COLUMN
-   ================================================================ */
-
-/* -- Agent Society -- */
-.agent-feed{display:flex;flex-direction:column;gap:3px;margin-top:4px;max-height:200px;overflow-y:auto;}
-.agent-row{
-  display:flex;align-items:center;gap:8px;
-  padding:5px 6px;font-size:11px;
-  border:1px solid rgba(0,240,255,.04);
-  background:rgba(0,240,255,.01);
-}
-.agent-row .a-icon{
-  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
-  border:1px solid rgba(0,240,255,.12);border-radius:50%;
-  font-size:10px;font-family:monospace;color:#00f0ff;
-}
-.agent-row .a-name{flex:1;color:#a0d4e8}
-.agent-row .a-status{
-  font-size:8px;color:#00ff88;display:flex;align-items:center;gap:4px;
-}
-.agent-row .a-status::before{
-  content:'';width:4px;height:4px;border-radius:50%;
-  background:#00ff88;box-shadow:0 0 5px #00ff88;
-}
-
-/* -- Project Overview -- */
-.proj-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:5px;
-}
-.proj-cell{
-  text-align:center;padding:7px 4px;
-  border:1px solid rgba(0,240,255,.05);
-}
-.proj-cell .pj-num{
-  font-size:16px;font-weight:700;color:#00f0ff;font-family:monospace;
-  text-shadow:0 0 8px rgba(0,240,255,.15);
-}
-.proj-cell .pj-lbl{
-  font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(0,240,255,.35);margin-top:2px;
-}
-.proj-latest{
-  font-size:9px;color:rgba(0,240,255,.3);margin-top:4px;font-family:monospace;
-}
-
-/* -- System Log -- */
-.log-feed{
-  display:flex;flex-direction:column;gap:2px;margin-top:4px;
-  max-height:140px;overflow-y:auto;
-}
-.log-line{
-  display:flex;gap:6px;font-size:9px;padding:3px 4px;
-  border-bottom:1px solid rgba(0,240,255,.02);
-}
-.log-line .lt{color:rgba(0,240,255,.35);flex-shrink:0;font-family:monospace;}
-.log-line .lm{color:#88b8c8;word-break:break-word;}
-.log-line .lm.ok{color:#00ff88}
-.log-line .lm.wa{color:#ffaa00}
-.log-line .lm.er{color:#ff0044}
-
-/* ================================================================
-   BOTTOM COMMAND DOCK (fixed)
-   ================================================================ */
-.dock{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:min(100% - 12px,1380px);
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:5px;
-  padding:8px 12px;
-  border-top:1px solid rgba(0,240,255,.12);
-  background:rgba(4,10,18,.94);
-  backdrop-filter:blur(14px);
-  box-shadow:0 -4px 30px rgba(0,240,255,.04);
-  z-index:100;
-}
-.dock-btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;padding:8px 4px;cursor:pointer;
-  border:1px solid rgba(0,240,255,.06);background:rgba(0,240,255,.015);
-  color:rgba(0,240,255,.55);font-size:8px;text-transform:uppercase;letter-spacing:2px;
-  transition:all .2s;text-decoration:none;font-family:inherit;
-}
-.dock-btn .db-icon{font-size:18px;line-height:1;font-family:monospace;}
-.dock-btn:hover{
-  border-color:rgba(0,240,255,.25);
-  background:rgba(0,240,255,.05);
-  color:#00f0ff;
-  box-shadow:0 0 12px rgba(0,240,255,.05);
-}
-.dock-btn.alert:hover{border-color:rgba(255,0,68,.3);color:#ff0044}
-
-/* ================================================================
-   EXECUTION CONSOLE (safe mode sandbox — inside center panel)
-   ================================================================ */
-.xcon{
-  border-top:1px solid rgba(0,240,255,.06);margin-top:8px;padding-top:8px;
-}
-.xcon-hdr{
-  display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;
-}
-.xcon-hdr .xl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(0,240,255,.35);}
-.xcon-hdr .xs{font-size:8px;padding:2px 8px;border:1px solid rgba(0,240,255,.1);color:#00f0ff;}
-.xcon-inp{display:flex;gap:4px;margin-bottom:6px;}
-.xcon-inp input{
-  flex:1;padding:5px 8px;
-  background:rgba(0,8,16,.6);border:1px solid rgba(0,240,255,.1);
-  color:#b8e2f2;font-family:inherit;font-size:10px;outline:none;
-}
-.xcon-inp input:focus{border-color:#00f0ff;box-shadow:0 0 8px rgba(0,240,255,.08);}
-.xcon-inp button{
-  padding:5px 12px;cursor:pointer;
-  background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.12);
-  color:#00f0ff;font-size:9px;text-transform:uppercase;letter-spacing:1px;
-  font-family:inherit;
-}
-.xcon-grd{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin:4px 0;
-}
-.xcon-cell{
-  padding:3px 5px;border:1px solid rgba(0,240,255,.04);font-size:8px;
-}
-.xcon-cell .xc-l{color:rgba(0,240,255,.3);text-transform:uppercase;letter-spacing:1px;}
-.xcon-cell .xc-v{color:#b0d8e8;margin-top:1px;word-break:break-all;}
-.xcon-2col{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0;}
-.xcon-2col ol{margin:2px 0 0 12px;font-size:8px;color:#80b0c8;}
-.xcon-apr{padding:6px;border:1px solid rgba(0,255,136,.08);margin:4px 0;}
-.xcon-apr .apr-act{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
-.xcon-apr button{
-  padding:3px 10px;font-size:8px;text-transform:uppercase;letter-spacing:1px;
-  cursor:pointer;border:1px solid;font-family:inherit;
-}
-.xcon-apr button.ap{color:#00ff88;border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.04);}
-.xcon-apr button.rj{color:#ff0044;border-color:rgba(255,0,68,.3);background:rgba(255,0,68,.04);}
-.xcon-apr button.rf{color:rgba(0,240,255,.5);border-color:rgba(0,240,255,.12);}
-.xcon-apr button:disabled{opacity:.25;cursor:not-allowed;}
-.xcon-out{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0;}
-.xcon-out pre{
-  max-height:70px;overflow:auto;padding:4px 6px;font-size:8px;
-  background:rgba(0,8,16,.5);border:1px solid rgba(0,240,255,.04);
-  color:#80b0c8;white-space:pre-wrap;word-break:break-word;
-}
-.xcon-hist{max-height:80px;overflow-y:auto;font-size:8px;}
-.xcon-hist > div{padding:2px 4px;border-bottom:1px solid rgba(0,240,255,.02);}
-
-/* ================================================================
-   RESPONSIVE
-   ================================================================ */
-@media(max-width:1100px){
-  .body{grid-template-columns:1fr 1fr;}
-  .body > .center-col{order:-1;grid-column:1/3;}
-}
-@media(max-width:760px){
-  .body{grid-template-columns:1fr;}
-  .body > .center-col{order:-1;grid-column:1;}
-  .header{padding:8px 12px;flex-wrap:wrap;gap:6px;}
-  .header-brand-text h1{font-size:20px;letter-spacing:5px;}
-  .header-logo{width:34px;height:34px;font-size:16px;}
-  .header-clock{font-size:11px;padding:4px 10px;}
-  .header-right{gap:10px;}
-  .hero-glitch{font-size:28px;letter-spacing:8px;}
-  .holo{width:160px;height:160px;}
-  .caps-grid{grid-template-columns:repeat(3,1fr);}
-  .dock{grid-template-columns:repeat(3,1fr);}
-  /* Dense mobile panels */
-  .panel{padding:8px;}
-  .ctrl-grid{grid-template-columns:1fr 1fr;}
-  .agent-feed{max-height:120px;}
-  .log-feed{max-height:100px;}
-  .task-feed{max-height:100px;}
-}
-@media(max-width:480px){
-  .hero-glitch{font-size:22px;letter-spacing:5px;}
-  .holo{width:130px;height:130px;}
-  .header-brand-text h1{font-size:16px;letter-spacing:3px;}
-  .caps-grid{grid-template-columns:repeat(2,1fr);}
-  .dock{grid-template-columns:repeat(2,1fr);}
-}
-
-/* ================================================================
-   HIDDEN ELEMENTS — preserved for JS callbacks
-   ================================================================ */
-.hidden-js{display:none !important;}
-
-/* ===== TOAST SYSTEM ===== */
-.toast-cont{
-  position:fixed;top:12px;right:12px;z-index:10000;
-  display:flex;flex-direction:column;gap:6px;
-  max-width:340px;width:100%;pointer-events:none;
-}
+/* Toast */
+.toast-container{position:fixed;top:70px;right:12px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .toast{
-  pointer-events:auto;
-  padding:10px 14px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
-  border:1px solid rgba(0,240,255,.15);
-  background:rgba(4,12,22,.94);backdrop-filter:blur(10px);
-  color:#b8e2f2;display:flex;align-items:center;gap:10px;
-  animation:tIn .25s ease-out;
-  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:12px;color:var(--text-primary);
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  animation:slideIn 0.25s ease-out;max-width:280px;
 }
-.toast .ti{font-size:14px;flex-shrink:0;font-family:monospace}
-.toast .tm{flex:1}
-.toast .tc{cursor:pointer;opacity:.4;font-size:11px}
-.toast .tc:hover{opacity:1}
-.toast.ok{border-color:rgba(0,255,136,.3)}
-.toast.er{border-color:rgba(255,0,68,.4)}
-.toast.wa{border-color:rgba(255,170,0,.3)}
-@keyframes tIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.tOut{animation:tOut .3s ease-in forwards}
-@keyframes tOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+.toast.success{border-color:var(--accent-green)}
+.toast.error{border-color:var(--accent-red)}
+.toast.info{border-color:var(--accent-cyan)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ===== DEBUG PANEL ===== */
-.dbg-tog{
-  position:fixed;bottom:80px;right:8px;z-index:9998;
-  width:24px;height:24px;border-radius:50%;
-  border:1px solid rgba(0,240,255,.1);background:rgba(0,240,255,.04);
-  color:rgba(0,240,255,.3);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-family:monospace;
-}
-.dbg-tog:hover{border-color:rgba(0,240,255,.3);color:#00f0ff}
-.dbg-pnl{
-  position:fixed;bottom:80px;right:36px;z-index:9998;
-  width:300px;max-height:260px;overflow-y:auto;
-  border:1px solid rgba(0,240,255,.12);
-  background:rgba(4,10,18,.94);backdrop-filter:blur(12px);
-  padding:8px 10px;font-size:8px;font-family:monospace;display:none;
-}
-.dbg-pnl.op{display:block}
-.dbg-pnl .dbg-h{font-size:9px;color:#00f0ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
-.dbg-pnl .dbg-r{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(0,240,255,.03)}
-.dbg-pnl .dbg-r .dl{color:rgba(0,240,255,.4)}
-.dbg-pnl .dbg-r .dv{color:#80c8e0}
-.dbg-pnl .dbg-r .dv.ok{color:#00ff88}
-.dbg-pnl .dbg-r .dv.er{color:#ff0044}
-.dbg-pnl .dbg-r .dv.wa{color:#ffaa00}
+/* Loading spinner */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent-cyan);border-radius:50%;animation:spin 0.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty-state{text-align:center;padding:16px;font-size:12px;color:var(--text-muted)}
+
+/* Collapsible section */
+.section-toggle{background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:12px;padding:2px 6px;border-radius:4px}
+.section-toggle:hover{background:var(--bg-secondary)}
+
+/* Section divider */
+.section-divider{margin:4px 0;border:none;border-top:1px solid var(--border);opacity:0.5}
 </style>
 </head>
 <body>
 
-<div class="hud-bg"></div>
-<div class="app">
-
-<!-- ===== HEADER ===== -->
-<header class="header">
-  <div class="header-brand">
+<div class="header">
+  <div class="header-left">
     <div class="header-logo">J</div>
-    <div class="header-brand-text">
-      <h1>JARVIS CORE</h1>
-      <div class="sub">Futuristic HUD ◆ v2.0</div>
-    </div>
+    <span class="header-title">JARVIS Control</span>
+    <span class="header-badge" id="statusBadge">LIVE</span>
   </div>
-  <div class="header-right">
-    <div class="header-clock" id="hudClock">--:--:--</div>
-    <div class="header-badge">
-      <span class="badge-dot"></span>
-      <span id="hudStatusText">SYSTEM ONLINE</span>
-    </div>
-  </div>
-</header>
-
-<!-- ===== 3-COLUMN BODY ===== -->
-<div class="body">
-
-<!-- ===== LEFT COLUMN ===== -->
-<div>
-  <!-- Control Center -->
-  <div class="panel">
-    <div class="panel-title">⏺ CONTROL CENTER <span class="badge">LIVE</span></div>
-    <div class="panel-sub">System Status Overview</div>
-    <div class="ctrl-grid">
-      <div class="ctrl-cell">
-        <div class="lbl">System</div>
-        <div class="val"><span class="dot gr" id="hudDotSys"></span><span id="hudSysStatus">{{ data.status }}</span></div>
-      </div>
-      <div class="ctrl-cell">
-        <div class="lbl">Mode</div>
-        <div class="val"><span class="dot cy"></span><span id="hudSysMode">{{ data.mode }}</span></div>
-      </div>
-      <div class="ctrl-cell">
-        <div class="lbl">Runtime</div>
-        <div class="val"><span class="dot gr" id="hudDotRt"></span><span id="hudSysRuntime">{{ data.runtime }}</span></div>
-      </div>
-      <div class="ctrl-cell">
-        <div class="lbl">Voice</div>
-        <div class="val"><span class="dot cy"></span><span id="hudVoiceStatus">{{ data.voice }}</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Runtime Overview -->
-  <div class="panel">
-    <div class="panel-title">⟐ RUNTIME OVERVIEW</div>
-    <div class="panel-sub">Execution Metrics</div>
-    <div class="run-metrics">
-      <div class="run-m"><div class="num" id="rtActive">0</div><div class="lbl">Active</div></div>
-      <div class="run-m"><div class="num" id="rtComplete">0</div><div class="lbl">Completed</div></div>
-      <div class="run-m"><div class="num" id="rtFailed">0</div><div class="lbl">Failed</div></div>
-    </div>
-  </div>
-
-  <!-- Active Tasks -->
-  <div class="panel">
-    <div class="panel-title">▣ ACTIVE TASKS</div>
-    <div class="panel-sub">Command Queue</div>
-    <div class="task-feed" id="hudTaskQueue">
-      <div class="task-row"><span class="mark wa"></span><span class="nm">Waiting for data...</span><span class="pc">--</span></div>
-    </div>
-  </div>
-
-  <!-- Voice Command -->
-  <div class="panel">
-    <div class="panel-title">🎤 VOICE COMMAND</div>
-    <div class="panel-sub">Voice Control Interface</div>
-    <div class="vox">
-      <div class="vox-wave"></div>
-      <div class="vox-circle">V</div>
-      <div class="vox-status" id="hudVoiceListening">LISTENING...</div>
-      <div style="font-size:8px;color:rgba(0,240,255,.25);margin-top:2px">Voice: <span id="hudVoiceDetail">{{ data.voice }}</span></div>
-    </div>
-  </div>
+  <span class="header-time" id="headerTime"></span>
 </div>
 
-<!-- ===== CENTER COLUMN ===== -->
-<div class="center-col">
-  <!-- Main Hologram + Identity panel -->
-  <div class="panel" style="margin-bottom:0;">
-    <div class="panel-title">⟡ AI CORE <span class="badge">IDENTITY</span></div>
-    <div class="panel-sub">JARVIS Central Intelligence</div>
+<div class="container">
 
-    <!-- I AM JARVIS -->
-    <div class="hero-section">
-      <div class="hero-glitch" data-text="I AM JARVIS">I AM JARVIS</div>
-      <div class="hero-sub">Artificial General Intelligence</div>
+  <!-- Status Cards -->
+  <div class="status-grid" id="statusGrid">
+    <div class="status-item">
+      <span class="status-item-label">Server</span>
+      <div class="status-item-value"><span class="status-dot offline" id="serverDot"></span><span id="serverStatus">--</span></div>
+      <span class="status-item-sub" id="serverSub">service</span>
     </div>
-
-    <!-- Circular Hologram -->
-    <div class="holo-wrap">
-      <div class="holo">
-        <div class="holo-sweep"></div>
-        <div class="holo-inner1"></div>
-        <div class="holo-inner2"></div>
-        <div class="holo-core">AI</div>
-      </div>
+    <div class="status-item">
+      <span class="status-item-label">Runtime</span>
+      <div class="status-item-value"><span class="status-dot offline" id="runtimeDot"></span><span id="runtimeStatus">--</span></div>
+      <span class="status-item-sub" id="runtimeSub">v1.0</span>
     </div>
-
-    <!-- Core Identity -->
-    <div class="identity-grid">
-      <div class="id-item">
-        <div class="id-lbl">Designation</div>
-        <div class="id-val" id="idDesignation">JARVIS-CORE</div>
-      </div>
-      <div class="id-item">
-        <div class="id-lbl">Version</div>
-        <div class="id-val">2.0.0</div>
-      </div>
-      <div class="id-item">
-        <div class="id-lbl">Status</div>
-        <div class="id-val" id="idStatus"><span style="color:#00ff88">●</span> ONLINE</div>
-      </div>
-      <div class="id-item">
-        <div class="id-lbl">Mode</div>
-        <div class="id-val" id="idMode">{{ data.mode }}</div>
-      </div>
+    <div class="status-item">
+      <span class="status-item-label">Agents</span>
+      <div class="status-item-value"><span id="agentCount">0</span></div>
+      <span class="status-item-sub" id="agentSub">available</span>
     </div>
-
-    <!-- Capabilities -->
-    <div style="margin-top:6px;">
-      <div class="panel-sub" style="margin-bottom:4px;">Core Capabilities</div>
-      <div class="caps-grid">
-        <div class="cap-item"><div class="cap-icon">&lt;/&gt;</div><div class="cap-lbl">Code</div></div>
-        <div class="cap-item"><div class="cap-icon">✓</div><div class="cap-lbl">Review</div></div>
-        <div class="cap-item"><div class="cap-icon">◉</div><div class="cap-lbl">Plan</div></div>
-        <div class="cap-item"><div class="cap-icon">⌘</div><div class="cap-lbl">Debug</div></div>
-        <div class="cap-item"><div class="cap-icon">↗</div><div class="cap-lbl">Deploy</div></div>
-        <div class="cap-item"><div class="cap-icon">⊞</div><div class="cap-lbl">HUD</div></div>
-        <div class="cap-item"><div class="cap-icon">♪</div><div class="cap-lbl">Voice</div></div>
-        <div class="cap-item"><div class="cap-icon">◈</div><div class="cap-lbl">Learn</div></div>
-      </div>
+    <div class="status-item">
+      <span class="status-item-label">Voice</span>
+      <div class="status-item-value"><span class="status-dot offline" id="voiceDot"></span><span id="voiceStatus">--</span></div>
+      <span class="status-item-sub" id="voiceSub">--</span>
     </div>
+  </div>
 
-    <!-- Learning Status -->
-    <div class="learn-section">
-      <div class="panel-sub" style="margin-bottom:4px;">Learning Status</div>
-      <div class="learn-bar">
-        <div class="lb-hdr"><span>Memory Indexing</span><span id="memPct">78%</span></div>
-        <div class="lb-track"><div class="lb-fill cy" id="memFill" style="width:78%"></div></div>
+  <!-- Task Timeline -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Task Timeline</span>
+      <span id="totalTasks" style="font-size:12px;color:var(--text-muted)">0 tasks</span>
+    </div>
+    <div class="task-timeline" id="taskTimeline">
+      <div class="timeline-step" data-step="queued">
+        <div class="timeline-dot">Q</div>
+        <span class="timeline-label">Queued</span>
+        <span class="timeline-count" id="countQueued">0</span>
       </div>
-      <div class="learn-bar">
-        <div class="lb-hdr"><span>Skill Acquisition</span><span id="skillPct">62%</span></div>
-        <div class="lb-track"><div class="lb-fill gr" id="skillFill" style="width:62%"></div></div>
+      <div class="timeline-step" data-step="parsed">
+        <div class="timeline-dot">P</div>
+        <span class="timeline-label">Parsed / Routed</span>
+        <span class="timeline-count" id="countParsed">0</span>
       </div>
-      <div class="learn-bar">
-        <div class="lb-hdr"><span>Data Synth</span><span id="dataPct">85%</span></div>
-        <div class="lb-track"><div class="lb-fill yl" id="dataFill" style="width:85%"></div></div>
+      <div class="timeline-step" data-step="waiting_approval">
+        <div class="timeline-dot">A</div>
+        <span class="timeline-label">Waiting Approval</span>
+        <span class="timeline-count" id="countApproval">0</span>
       </div>
-      <div class="learn-bar">
-        <div class="lb-hdr"><span>Pattern Recognition</span><span id="patPct">45%</span></div>
-        <div class="lb-track"><div class="lb-fill rd" id="patFill" style="width:45%"></div></div>
+      <div class="timeline-step" data-step="running">
+        <div class="timeline-dot">R</div>
+        <span class="timeline-label">Running</span>
+        <span class="timeline-count" id="countRunning">0</span>
+      </div>
+      <div class="timeline-step" data-step="completed">
+        <div class="timeline-dot">C</div>
+        <span class="timeline-label">Completed</span>
+        <span class="timeline-count" id="countCompleted">0</span>
+      </div>
+      <div class="timeline-step" data-step="failed">
+        <div class="timeline-dot">F</div>
+        <span class="timeline-label">Failed</span>
+        <span class="timeline-count" id="countFailed">0</span>
       </div>
     </div>
   </div>
 
-  <!-- ===== EXECUTION CONSOLE (safe sandbox) ===== -->
-  <div class="panel">
-    <div class="panel-title">⚙ APPROVAL EXECUTION <span class="badge">SAFE MODE</span></div>
-    <div class="panel-sub" id="hudExecSubtitle">اكتب لجارفيس المطلوب إصلاحه أو تنفيذه...</div>
-    <div class="xcon" id="approvalExecConsole">
-      <div class="xcon-hdr">
-        <span class="xl">Execution Status</span>
-        <span class="xs" id="jarvisExecLiveStatus">IDLE</span>
-      </div>
-      <form id="jarvisExecForm">
-        <div class="xcon-inp">
-          <input id="jarvisExecInput" type="text" placeholder="اكتب لجارفيس المطلوب إصلاحه أو تنفيذه..." autocomplete="off" dir="auto">
-          <button type="submit">Run</button>
-        </div>
-      </form>
-      <div class="xcon-grd">
-        <div class="xcon-cell"><div class="xc-l">Command</div><div class="xc-v" id="jarvisCurCmd">Waiting</div></div>
-        <div class="xcon-cell"><div class="xc-l">Intent</div><div class="xc-v" id="jarvisIntent">—</div></div>
-        <div class="xcon-cell"><div class="xc-l">Risk</div><div class="xc-v" id="jarvisRisk">none</div></div>
-        <div class="xcon-cell"><div class="xc-l">Approval</div><div class="xc-v" id="jarvisAprState">waiting</div></div>
-      </div>
-      <div class="xcon-2col">
-        <div><div class="xc-l">Plan</div><ol id="jarvisPlan"><li>Submit a safe command.</li></ol></div>
-        <div><div class="xc-l">Risk Analysis</div><ol id="jarvisRiskList"><li>No analysis yet.</li></ol></div>
-      </div>
-      <div class="xcon-apr" id="jarvisAprZone">
-        <div class="xc-l">APPROVE / REJECT</div>
-        <div id="jarvisAprHelp" style="font-size:8px;color:rgba(0,240,255,.3);margin:2px 0;">Approval required before execution.</div>
-        <div class="apr-act">
-          <button class="ap" id="jarvisApproveBtn" disabled>Approve &amp; Run</button>
-          <button class="rj" id="jarvisRejectBtn" disabled>Reject</button>
-          <button class="rf" id="jarvisRefreshBtn">Refresh</button>
-        </div>
-      </div>
-      <div class="xcon-out">
-        <div><div class="xc-l">STDOUT</div><pre id="jarvisStdout"></pre></div>
-        <div><div class="xc-l">STDERR</div><pre id="jarvisStderr"></pre></div>
-      </div>
-      <div class="xcon-grd">
-        <div class="xcon-cell"><div class="xc-l">Status</div><div class="xc-v" id="jarvisExecStatus">IDLE</div></div>
-        <div class="xcon-cell"><div class="xc-l">Target</div><div class="xc-v" id="jarvisTarget">—</div></div>
-        <div class="xcon-cell"><div class="xc-l">Result</div><div class="xc-v" id="jarvisResult">idle</div></div>
-        <div class="xcon-cell"><div class="xc-l">Rollback</div><div class="xc-v" id="jarvisRollback">—</div></div>
-      </div>
-      <div class="xc-l">Task Timeline</div>
-      <div class="xcon-timeline" id="jarvisTimeline"><div style="font-size:8px;color:rgba(0,240,255,.2);">queued → parsed → planned → waiting_approval → approved → running → completed</div></div>
-      <div class="xc-l">History</div>
-      <div class="xcon-hist" id="jarvisHistory"><div>No execution history.</div></div>
+  <!-- Command Input -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Command</span>
     </div>
-  </div>
-</div>
-
-<!-- ===== RIGHT COLUMN ===== -->
-<div>
-  <!-- Agent Society -->
-  <div class="panel">
-    <div class="panel-title">⟐ AGENT SOCIETY</div>
-    <div class="panel-sub">Active AI Agents</div>
-    <div class="agent-feed" id="hudAgentList">
-      {% for agent in data.agents %}
-      <div class="agent-row">
-        <div class="a-icon">A</div>
-        <span class="a-name">{{ agent }}</span>
-        <span class="a-status">ONLINE</span>
+    <div class="command-area">
+      <div class="command-input-group">
+        <input class="command-input" id="commandInput" type="text" placeholder="Enter a command for JARVIS..." autocomplete="off">
+        <button class="btn btn-primary" id="sendBtn">Send</button>
       </div>
-      {% endfor %}
+      <div class="btn-group">
+        <button class="btn btn-success btn-sm" id="createTaskBtn">Create Task</button>
+        <button class="btn btn-warning btn-sm" id="approveRunBtn">Approve &amp; Run</button>
+        <button class="btn btn-outline btn-sm" id="refreshBtn">Refresh</button>
+      </div>
     </div>
   </div>
 
-  <!-- OpenCode Engineering Agent -->
-  <div class="panel" id="opencodePanel">
-    <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>&#9881; OPENCODE AGENT</span>
-      <span class="oc-badge" id="ocBadge" style="font-size:8px;padding:1px 6px;border-radius:8px;background:#333;color:#888;">CHECKING</span>
+  <!-- Recent Tasks -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Tasks</span>
+      <button class="section-toggle" id="tasksToggle">hide</button>
     </div>
-    <div class="panel-sub" style="font-size:8px;">
-      Path: <span id="ocPath">—</span> ·
-      Version: <span id="ocVersion">—</span> ·
-      <label><input type="checkbox" id="ocEnabled" checked onchange="toggleOpenCode()"> Enabled</label>
-    </div>
-    <div style="margin:4px 0;">
-      <textarea id="ocTaskInput" rows="2" style="width:100%;background:#0a1a2a;border:1px solid #0a4a6a;color:#c0e4f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical;" placeholder="Enter engineering task for OpenCode..."></textarea>
-    </div>
-    <div style="display:flex;gap:4px;margin:4px 0;">
-      <select id="ocMode" style="flex:1;background:#0a1a2a;border:1px solid #0a4a6a;color:#c0e4f0;font-size:10px;padding:2px 4px;border-radius:4px;">
-        <option value="plan_only">Plan Only</option>
-        <option value="supervised_apply" selected>Supervised Apply</option>
-        <option value="direct_apply_inside_project_root">Direct Apply</option>
-      </select>
-      <button class="ap" id="ocRunBtn" onclick="runOpenCode()" style="padding:4px 12px;font-size:10px;">Run</button>
-    </div>
-    <div style="margin:4px 0;display:flex;gap:4px;">
-      <button class="rf" onclick="refreshOpenCodeStatus()" style="padding:2px 8px;font-size:9px;">Refresh Status</button>
-      <button class="rf" onclick="loadOpenCodeTasks()" style="padding:2px 8px;font-size:9px;">Tasks</button>
-    </div>
-    <div id="ocStatus" style="font-size:9px;min-height:14px;margin:2px 0;color:rgba(0,240,255,.6);">Initializing...</div>
-    <div id="ocOutputArea" style="display:none;">
-      <div class="xc-l" style="font-size:9px;margin-top:4px;">STDOUT</div>
-      <pre id="ocStdout" style="background:#0a0a12;border:1px solid #0a3a4a;border-radius:4px;padding:4px;font-size:9px;max-height:120px;overflow:auto;color:#a0d4e8;white-space:pre-wrap;word-break:break-all;"></pre>
-      <div class="xc-l" style="font-size:9px;margin-top:2px;">STDERR</div>
-      <pre id="ocStderr" style="background:#0a0a12;border:1px solid #4a1a1a;border-radius:4px;padding:4px;font-size:9px;max-height:80px;overflow:auto;color:#e8a0a0;white-space:pre-wrap;word-break:break-all;"></pre>
-      <div class="xc-l" style="font-size:9px;margin-top:2px;">Validation</div>
-      <pre id="ocValidation" style="background:#0a0a12;border:1px solid #0a3a4a;border-radius:4px;padding:4px;font-size:9px;max-height:60px;overflow:auto;color:#a0e8c0;white-space:pre-wrap;word-break:break-all;"></pre>
-      <div style="display:flex;gap:4px;margin-top:2px;">
-        <div style="flex:1;font-size:8px;color:rgba(0,240,255,.4);">Files Changed: <span id="ocFilesChanged">—</span></div>
-        <div style="font-size:8px;color:rgba(0,240,255,.4);">Status: <span id="ocTaskStatus">—</span></div>
-      </div>
-    </div>
-    <div class="xcon-timeline" id="ocTasksList" style="max-height:120px;overflow-y:auto;margin-top:4px;font-size:8px;">
-      <div style="color:rgba(0,240,255,.2);">No tasks yet.</div>
+    <div class="task-list" id="taskList">
+      <div class="empty-state">No tasks yet</div>
     </div>
   </div>
 
-  <!-- Project Overview -->
-  <div class="panel">
-    <div class="panel-title">📊 PROJECT OVERVIEW</div>
-    <div class="panel-sub">Execution Summary</div>
-    <div class="proj-grid">
-      <div class="proj-cell"><div class="pj-num" id="projActive">0</div><div class="pj-lbl">Active</div></div>
-      <div class="proj-cell"><div class="pj-num" id="projComplete">0</div><div class="pj-lbl">Completed</div></div>
-      <div class="proj-cell"><div class="pj-num" id="projFailed">0</div><div class="pj-lbl">Failed</div></div>
-      <div class="proj-cell"><div class="pj-num" id="projSched">0</div><div class="pj-lbl">Scheduler</div></div>
+  <!-- Agents -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Agents</span>
     </div>
-    <div class="proj-latest" id="projLatest">Latest: none</div>
-  </div>
-
-  <!-- System Log -->
-  <div class="panel">
-    <div class="panel-title">📋 SYSTEM LOG</div>
-    <div class="panel-sub">Live Runtime Events</div>
-    <div class="log-feed" id="hudSysLog">
-      <div class="log-line"><span class="lt">--:--:--</span><span class="lm">Waiting for events...</span></div>
+    <div class="agent-list" id="agentList">
+      <div class="empty-state">Loading agents...</div>
     </div>
   </div>
 
-  <!-- Execution Mode -->
-  <div class="panel">
-    <div class="panel-title">⚙ EXECUTION MODE</div>
-    <div class="panel-sub">Controlled Real Execution</div>
-    <div id="hudModePanel">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:8px;color:rgba(0,240,255,.4);">Mode:</span>
-        <span id="hudCurrentMode" style="font-size:10px;color:#ffaa00;letter-spacing:1px;text-transform:uppercase;">loading...</span>
-      </div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        <button onclick="enableSupervisedExecution()" style="font-size:7px;padding:3px 6px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.15);color:#00ff88;cursor:pointer;font-family:monospace;">Supervised Real</button>
-        <button onclick="enableControlledRealExecution()" style="font-size:7px;padding:3px 6px;background:rgba(0,240,255,.08);border:1px solid rgba(0,240,255,.15);color:#00f0ff;cursor:pointer;font-family:monospace;">Controlled Real</button>
-        <button onclick="returnToSimulation()" style="font-size:7px;padding:3px 6px;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.15);color:#ffaa00;cursor:pointer;font-family:monospace;">Simulation</button>
-      </div>
-      <div style="margin-top:6px;padding-top:4px;border-top:1px solid rgba(0,240,255,.05);">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <span style="font-size:8px;color:rgba(0,240,255,.4);">Patch:</span>
-          <span id="hudPatchStatus" style="font-size:8px;color:rgba(0,240,255,.3);">none</span>
-        </div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <button onclick="approvePatch()" style="font-size:7px;padding:2px 6px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.15);color:#00ff88;cursor:pointer;font-family:monospace;">Approve Patch</button>
-          <button onclick="rejectPatch()" style="font-size:7px;padding:2px 6px;background:rgba(255,0,68,.08);border:1px solid rgba(255,0,68,.15);color:#ff4466;cursor:pointer;font-family:monospace;">Reject Patch</button>
-          <button onclick="loadPatchStatus()" style="font-size:7px;padding:2px 6px;background:rgba(0,240,255,.05);border:1px solid rgba(0,240,255,.08);color:rgba(0,240,255,.5);cursor:pointer;font-family:monospace;">Refresh</button>
+  <!-- Voice -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Voice</span>
+      <div class="voice-indicator" id="voiceIndicator">
+        <span id="voiceLabel">checking...</span>
+        <div class="voice-wave" id="voiceWave">
+          <span></span><span></span><span></span><span></span><span></span>
         </div>
       </div>
     </div>
+    <div id="voiceDetails" style="font-size:12px;color:var(--text-secondary)"></div>
   </div>
+
 </div>
 
-</div><!-- /body -->
-
-</div><!-- /app -->
-
-<!-- ===== TOAST CONTAINER ===== -->
-<div class="toast-cont" id="toastCont"></div>
-
-<!-- ===== DEBUG TOGGLE + PANEL ===== -->
-<button class="dbg-tog" id="dbgTog" onclick="toggleDebug()" title="Debug Panel">◉</button>
-<div class="dbg-pnl" id="dbgPnl">
-  <div class="dbg-h">⟐ DEBUG PANEL</div>
-  <div id="dbgContent"></div>
-</div>
-
-<!-- ===== BOTTOM COMMAND DOCK ===== -->
-<div class="dock">
-  <button class="dock-btn" onclick="dockVoice()" title="Voice Control Interface">
-    <span class="db-icon">♪</span>Voice Control<span style="font-size:7px;opacity:.4">Interface</span>
-  </button>
-  <button class="dock-btn" onclick="dockRuntime()" title="Refresh JARVIS Runtime">
-    <span class="db-icon">⟳</span>Open Runtime<span style="font-size:7px;opacity:.4">Refresh</span>
-  </button>
-  <button class="dock-btn" onclick="dockTask()" title="Focus command input">
-    <span class="db-icon">+</span>Create Task<span style="font-size:7px;opacity:.4">Safe Cmd</span>
-  </button>
-  <button class="dock-btn" onclick="dockAgents()" title="Toggle Agent Society panel">
-    <span class="db-icon">⟐</span>Agent Society<span style="font-size:7px;opacity:.4">Toggle</span>
-  </button>
-  <button class="dock-btn" onclick="dockDb()" title="System Health">
-    <span class="db-icon">⌂</span>DB Access<span style="font-size:7px;opacity:.4">Health</span>
-  </button>
-  <button class="dock-btn alert" onclick="dockSettings()" title="Open Settings Panel">
-    <span class="db-icon">⚙</span>Settings<span style="font-size:7px;opacity:.4">Config</span>
-  </button>
-</div>
-
-<!-- ===== RUNTIME DEBUG OVERLAY (toggled by double-clicking Debug toggle) ===== -->
-<div id="rtDebugOverlay" style="display:none;position:fixed;bottom:130px;right:8px;width:280px;max-height:300px;overflow-y:auto;z-index:9998;border:1px solid rgba(0,240,255,.2);background:rgba(4,12,22,.95);padding:8px;font-family:monospace;font-size:8px;line-height:1.6;">
-  <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#00f0ff;letter-spacing:1px;font-size:9px;">⟐ RT DEBUG<div style="cursor:pointer;color:rgba(0,240,255,.3)" onclick="document.getElementById('rtDebugOverlay').style.display='none'">X</div></div>
-  <div id="rtDebugContent"><div style="color:rgba(0,240,255,.3)">Waiting for data...</div></div>
-</div>
-
-<!-- ===== SETTINGS PANEL (modal, shown by dockSettings) ===== -->
-<div id="settingsPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9995;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="max-width:420px;width:90%;border:1px solid rgba(0,240,255,.15);background:rgba(4,12,22,.96);padding:16px;position:relative;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#00f0ff;">⚙ System Settings</div>
-      <button onclick="closeSettings()" style="background:none;border:1px solid rgba(0,240,255,.1);color:rgba(0,240,255,.4);cursor:pointer;padding:2px 8px;font-family:monospace;font-size:10px;">X</button>
-    </div>
-    <div id="settingsBody" style="font-size:10px;font-family:monospace;line-height:1.8;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
-        <div style="color:rgba(0,240,255,.4);">Mode</div><div style="color:#c0e4f0;">{{ data.mode }}</div>
-        <div style="color:rgba(0,240,255,.4);">Status</div><div style="color:#c0e4f0;">{{ data.status }}</div>
-        <div style="color:rgba(0,240,255,.4);">Voice</div><div style="color:#c0e4f0;">{{ data.voice }}</div>
-        <div style="color:rgba(0,240,255,.4);">Runtime</div><div style="color:#c0e4f0;">{{ data.runtime }}</div>
-        <div style="color:rgba(0,240,255,.4);">Agents</div><div style="color:#c0e4f0;">{{ data.agents|length }}</div>
-        <div style="color:rgba(0,240,255,.4);">Updated</div><div style="color:#c0e4f0;">{{ data.last_updated }}</div>
-        <div style="color:rgba(0,240,255,.4);">Safety</div><div style="color:#00ff88;">SAFE MODE</div>
-        <div style="color:rgba(0,240,255,.4);">Sandbox</div><div style="color:#00ff88;">ACTIVE</div>
-      </div>
-    </div>
-    <div style="margin-top:10px;font-size:8px;color:rgba(0,240,255,.2);letter-spacing:1px;">Runtime configuration is read-only in HUD mode.</div>
-  </div>
-</div>
-
-<!-- ================================================================ -->
-<!-- HIDDEN PLACEHOLDERS — preserved for existing JS callback targets -->
-<!-- ================================================================ -->
-<div class="hidden-js">
-  <span id="worker-status"></span><span id="worker-command"></span><span id="worker-result"></span><span id="worker-heartbeat"></span>
-  <span id="runtime-health-status"></span><span id="runtime-disk-usage"></span><span id="runtime-log-files"></span>
-  <span id="runtime-anomalies"></span><span id="runtime-timeline-silence"></span>
-  <span id="wake-needed"></span><span id="wake-silence"></span><span id="wake-heartbeat"></span>
-  <span id="wake-events-count"></span><span id="wake-mode"></span><span id="wake-safety"></span>
-  <span id="wake-last-signal"></span><span id="wake-cycles-count"></span><span id="wake-cycle-state"></span>
-  <span id="memory-wake-size"></span><span id="memory-cognition-size"></span>
-  <span id="pattern-risk"></span><span id="adaptive-risk"></span><span id="forecast-state"></span><span id="stability-score"></span>
-  <span id="repair-status"></span><span id="repair-auto-apply"></span><span id="repair-finding"></span>
-  <span id="repair-severity"></span><span id="repair-action"></span>
-  <span id="consensus-decision"></span><span id="consensus-confidence"></span><span id="consensus-reason"></span>
-  <span id="best-agent"></span><span id="agent-ranking"></span>
-  <span id="runtime-active-count"></span><span id="runtime-completed-count"></span><span id="runtime-failed-count"></span>
-  <span id="runtime-latest-session"></span><span id="scheduler-runs-count"></span>
-  <span id="scheduler-efficiency"></span><span id="scheduler-idle-count"></span>
-  <div id="runtime-sessions-feed"></div><div id="runtime-activity-feed"></div><div id="runtime-reasoning-stream"></div>
-  <span id="runtime-correlation-strength"></span><span id="runtime-correlation-forecast"></span>
-  <span id="runtime-correlation-risk"></span><div id="runtime-correlation-insights"></div>
-  <span id="runtime-insight-count"></span><div id="runtime-insight-list"></div>
-  <span id="erp-route-count"></span><span id="erp-template-count"></span><span id="erp-module-count"></span>
-  <span id="erp-static-count"></span><span id="erp-autonomy"></span><div id="erp-route-categories"></div>
-  <span id="erp-relationship-domains"></span><div id="erp-domain-map"></div><div id="erp-architecture-notes"></div>
-  <span id="runtime-supervision-state"></span><span id="runtime-supervision-warnings"></span>
-  <span id="runtime-supervision-watch"></span><span id="runtime-supervision-healthy"></span>
-  <div id="runtime-supervision-findings"></div><div id="runtime-supervision-notes"></div>
-  <span id="architecture-drift-state"></span><span id="architecture-drift-score"></span>
-  <span id="architecture-drift-history"></span><div id="architecture-drift-notes"></div>
-  <span id="structural-trend-state"></span><span id="structural-trend-score"></span>
-  <span id="structural-trend-history"></span><div id="structural-trend-notes"></div><div id="structural-domain-movement"></div>
-  <span id="engineering-high-priority"></span><span id="engineering-medium-priority"></span>
-  <span id="engineering-low-priority"></span><div id="engineering-recommendations-feed"></div><div id="engineering-strategic-notes"></div>
-  <span id="hotspots-total"></span><span id="hotspots-high-risk"></span><span id="hotspots-route-dense"></span>
-  <div id="hotspots-feed"></div><div id="fragile-zones-feed"></div>
-  <span id="priority-critical"></span><span id="priority-high"></span><span id="priority-medium"></span>
-  <div id="priority-feed"></div>
-  <span id="dependency-high-cascade"></span><span id="dependency-medium-cascade"></span>
-  <span id="dependency-low-cascade"></span><div id="dependency-feed"></div><div id="dependency-sequences-feed"></div>
-  <div id="jarvis-engineering-patch-panel"></div>
-  <span id="jarvis-patch-apply-status"></span><span id="jarvis-patch-task"></span>
-  <span id="jarvis-patch-mode"></span><span id="jarvis-patch-risk"></span><span id="jarvis-patch-approval-state"></span>
-  <div id="jarvis-patch-plan"></div><div id="jarvis-patch-files"></div>
-  <div id="jarvis-patch-validation-plan"></div><div id="jarvis-patch-rollback-plan"></div>
-  <pre id="jarvis-patch-diff"></pre>
-  <span id="jarvis-patch-approval-help"></span><span id="jarvis-patch-status"></span>
-  <span id="jarvis-patch-validation-result"></span><span id="jarvis-patch-files-changed"></span>
-  <span id="jarvis-patch-final-result"></span><pre id="jarvis-patch-stdout"></pre><pre id="jarvis-patch-stderr"></pre>
-  <div id="jarvis-patch-history"></div>
-  <button id="jarvis-approve-patch-button"></button><button id="jarvis-apply-patch-button"></button>
-  <button id="jarvis-reject-patch-button"></button><button id="jarvis-rollback-patch-button"></button>
-</div>
-
-<!-- ================================================================ -->
-<!-- JAVASCRIPT — All existing APIs and safe-mode execution preserved  -->
-<!-- ================================================================ -->
 <script>
-// ===== EXECUTION APPROVAL CONSOLE =====
 (function(){
-  const ids = {
-    form:"jarvisExecForm", input:"jarvisExecInput",
-    curCmd:"jarvisCurCmd", action:"jarvisAction",
-    risk:"jarvisRisk", aprState:"jarvisAprState",
-    plan:"jarvisPlan", riskList:"jarvisRiskList",
-    approve:"jarvisApproveBtn", reject:"jarvisRejectBtn",
-    refresh:"jarvisRefreshBtn", help:"jarvisAprHelp",
-    live:"jarvisExecLiveStatus", status:"jarvisExecStatus",
-    aprCmd:"jarvisAprCmd", result:"jarvisResult",
-    code:"jarvisCode", stdout:"jarvisStdout",
-    stderr:"jarvisStderr", history:"jarvisHistory",
-    intent:"jarvisIntent", target:"jarvisTarget",
-    rollback:"jarvisRollback", timeline:"jarvisTimeline"
+  'use strict';
+
+  const APIS = {
+    status: '/jarvis/api/status',
+    health: '/jarvis/api/health',
+    runtime: '/jarvis/api/runtime/status',
+    agents: '/jarvis/api/agents',
+    voice: '/jarvis/api/voice/status',
+    tasks: '/jarvis/api/runtime/tasks',
+    active: '/jarvis/api/execution/current',
+    execute: '/jarvis/api/runtime/execute',
+    approve: '/jarvis/api/execution/approve',
+    run: '/jarvis/api/execution/run',
   };
-  let curReqId=null;
-  const $=id=>document.getElementById(id);
-  const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-  const set=(id,v,f)=>{const n=$(id);if(n)n.textContent=v??f??"";};
-  const list=(id,items,f)=>{
-    const n=$(id);if(!n)return;
-    const a=Array.isArray(items)?items:[];
-    n.innerHTML=a.length?a.map(i=>`<li>${esc(i)}</li>`).join(""):`<li>${esc(f)}</li>`;
-  };
-  const sCls=s=>["completed","approved","waiting_approval","executing"].includes(String(s||"idle").toLowerCase())?"active":
-    ["blocked","rejected","failed","timed_out"].includes(String(s||"").toLowerCase())?"failed":"idle";
-  async function post(u,b){
-    const r=await fetch(u,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(b||{})
-    });
-    const txt=await r.text();
-    let data={};
-    try{data=txt?JSON.parse(txt):{};}catch(e){data={raw:txt};}
-    if(!r.ok){
-      data.ok=false;
-      data.http_status=r.status;
-      data.error=data.error||("HTTP "+r.status);
-    }
-    return data;
+
+  function $(id){return document.getElementById(id)}
+  function show(msg,type){
+    const c=$('toastContainer')||(function(){
+      const d=document.createElement('div');d.className='toast-container';d.id='toastContainer';
+      document.body.appendChild(d);return d;
+    })();
+    const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;
+    c.appendChild(t);setTimeout(()=>{t.remove()},3000);
   }
-  window.post=post;
-  function render(s){
-    s=s||{};curReqId=s.request_id||curReqId;
-    const sa=s.safety_decision||{},ex=s.execution_status||"IDLE",ap=s.approval_state||"waiting";
-    const isEngineering=s.detected_mode==="engineering_task";
-    const isPatchApproval=ap==="superseded_by_patch_approval"||ap==="waiting_patch_approval";
 
-    set(ids.curCmd,s.requested_command||"Waiting");
-    set(ids.action,s.interpreted_action||"No command");
-    set(ids.risk,s.risk_level||"none");
-    set(ids.aprState,ap);
-    set(ids.status,isEngineering?"READY FOR PATCH APPROVAL":ex);
-    set(ids.aprCmd,s.approved_command||"none");
-    set(ids.result,s.final_result||"idle");
-    set(ids.code,s.returncode==null?"--":s.returncode);
-    set(ids.help,sa.reason||"Approval required before execution.");
-    const l=$(ids.live);
-    if(l){
-      if(isEngineering){l.textContent="WAITING_APPROVAL";l.className="xs active";}
-      else{l.textContent=ex;l.className="xs "+sCls(ex);}
-    }
-    list(ids.plan,s.execution_plan,"Submit a safe command.");
-    list(ids.riskList,s.risk_analysis,"No analysis yet.");
-    const so=$(ids.stdout),se=$(ids.stderr);
-    if(so)so.textContent=s.stdout||"(no stdout)";
-    if(se)se.textContent=s.stderr||"(no stderr)";
-
-    // Approve enabled for:
-    // 1) Standard shell flow: waiting_approval + WAITING_APPROVAL + allowed
-    // 2) Engineering task: superseded_by_patch_approval + WAITING_APPROVAL
-    const ca=(ap==="waiting_approval"&&ex==="WAITING_APPROVAL"&&sa.allowed===true)
-          ||(isEngineering&&isPatchApproval&&ex==="WAITING_APPROVAL");
-    const cr=(ap==="waiting_approval"||ap==="approved"||isPatchApproval)&&ex!=="EXECUTING";
-    const aBtn=$(ids.approve),rBtn=$(ids.reject);
-    if(aBtn){aBtn.disabled=!ca;if(isEngineering&&ca)aBtn.textContent="Approve Patch & Apply";else if(!isEngineering)aBtn.textContent="Approve & Run";}
-    if(rBtn)rBtn.disabled=!cr;
-
-    // Also update supervised intent fields if data is available
-    const intentData=s.intent||s.parsed_intent||null;
-    if(intentData){
-      const iEl=$d("jarvisIntent");if(iEl)iEl.textContent=intentData.intent||"—";
-      const rEl=$d("jarvisRisk");if(rEl){
-        rEl.textContent=intentData.risk_level||s.risk_level||"none";
-        rEl.style.color=intentData.risk_level==="high"?"#ff0044":intentData.risk_level==="medium"?"#ffaa00":"#00ff88";
-      }
-      const tEl=$d("jarvisTarget");
-      if(tEl){
-        const tf=intentData.target_files||[];
-        tEl.textContent=tf.length?tf.join(", ").slice(0,40):"—";
-      }
-      const rbEl=$d("jarvisRollback");
-      if(rbEl){
-        const rp=intentData.rollback_plan||[];
-        rbEl.textContent=rp.length?"available":"—";
-        rbEl.style.color=rp.length?"#00ff88":"rgba(0,240,255,.3)";
-      }
-      const tlEl=$d("jarvisTimeline");
-      if(tlEl){
-        const steps=isEngineering
-          ?["queued","parsed","planned","patch_approval","approved","applying","completed"]
-          :["queued","parsed","planned","waiting_approval","approved","running","completed"];
-        const curStep=isEngineering?"waiting_approval":s.execution_status||"queued";
-        const idx=steps.indexOf(curStep.toLowerCase())>=0?steps.indexOf(curStep.toLowerCase())+1:1;
-        tlEl.innerHTML=steps.map((st,i)=>'<span style="color:'+(i<idx?'#00ff88':'rgba(0,240,255,.2)')+';font-size:8px;margin-right:4px;">'+(i<idx?'▶':'○')+' '+st+'</span>').join(" → ");
-      }
-    }
+  // Clock
+  function updateClock(){
+    const d=new Date();
+    $('headerTime').textContent=d.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
   }
-  async function refresh(){
+  setInterval(updateClock,1000);updateClock();
+
+  // Generic fetch helper
+  async function apiGet(url){
     try{
-      const r=await fetch("/jarvis/api/execution/current"),s=await r.json();
-      render(s);await hist();
-    }catch(e){set(ids.help,"Runtime unavailable.");console.error(e);}
+      const r=await fetch(url);return await r.json();
+    }catch(e){return null}
   }
-  async function hist(){
-    const n=$(ids.history);if(!n)return;
+  async function apiPost(url,body){
     try{
-      const r=await fetch("/jarvis/api/execution/history"),h=await r.json();
-      const e=Array.isArray(h)?h.slice(-8).reverse():[];
-      n.innerHTML=e.length?e.map(i=>`<div><b>${esc(i.command||"cmd")}</b> / ${esc(i.status||"")} <span style="color:rgba(0,240,255,.3)">${esc(i.timestamp||"")}</span></div>`).join(""):'<div>No execution history.</div>';
-    }catch(e){n.innerHTML='<div>History unavailable.</div>';}
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+      return await r.json();
+    }catch(e){return null}
   }
-  async function submit(ev){
-    ev.preventDefault();
-    const inp=$(ids.input),cmd=inp?inp.value.trim():"";
-    if(!cmd){set(ids.help,"Enter a command.");return;}
-    console.log("[submit] queuing command:",cmd);
-    // Try parsing as Arabic intent first
-    let intentResult=null;
-    try{
-      const ir=await fetch("/jarvis/mobile/api/runtime/intent/parse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:cmd})});
-      if(ir.ok)intentResult=await ir.json();
-    }catch(e){/* intent parse non-critical */}
-    try{
-      const q=await post("/jarvis/mobile/api/command",{command:cmd,source:"mobile_hud_exec"});
-      console.log("[submit] queue response:",q);
-      __rtDebug.lastPostResponse=q;
-      __rtDebug.lastQueuedCommand=cmd;
-      if(q&&q.accepted){
-        toast("Task queued: "+cmd,"+","ok");
-        logAction("task_queued_"+(q.command_id||"?").slice(0,8));
-        curReqId=q.command_id;
-        const renderState={requested_command:cmd,execution_status:"QUEUED",approval_state:"queued",safety_decision:{allowed:false,reason:"Task queued — tick worker to process."}};
-        if(intentResult&&intentResult.intent&&intentResult.intent!=="unknown"){
-          renderState.parsed_intent=intentResult;
-          renderState.risk_level=intentResult.risk_level||"none";
-        }
-        render(renderState);
-        await hist();
-        return;
-      }
-    }catch(e){
-      console.error("[submit] queue attempt failed, falling back to approval pipeline:",e);
-    }
-    // Fallback: approval pipeline for direct execution
-    try{
-      const d=await post("/jarvis/api/execution/request",{command:cmd});
-      render(d.state||{});await hist();
-    }catch(e2){
-      console.error("[submit] approval pipeline also failed:",e2);
-      set(ids.help,"Submission failed.");
-    }
-  }
-  // Queued task state — set by dockTask(), checked by approveRun/reject
-  window.__queuedTask=null;
 
-  // Prevent duplicate approval execution
-  window.__approvingWork=false;
-
-  async function approveRun(){
-    console.log("[approveRun] called, __queuedTask:",!!window.__queuedTask,"curReqId:",curReqId);
-    if(window.__approvingWork){toast("Already processing an approval.","⏳","wa");return;}
-    window.__approvingWork=true;
-    // If a queued task is pending, process it via worker tick
-    if(window.__queuedTask){
-      const qt=window.__queuedTask;
-      window.__queuedTask=null;
-      const b=$(ids.approve);if(b){b.disabled=true;b.textContent="Processing...";}
-      toast("Processing: "+(qt?.command||"unknown"),"▶","ok");
-      try{
-        await runWorkerTick();
-      }catch(e){
-        console.error("[approveRun] worker tick failed:",e);
-        toast("Worker tick failed","▶","er");
-      }
-      if(b){b.textContent="Approve & Run";b.disabled=true;}
-      window.__approvingWork=false;
-      return;
+  // Update status cards
+  async function updateStatus(){
+    const [sStat,rStat,agents,voice]=await Promise.all([
+      apiGet(APIS.status),apiGet(APIS.runtime),apiGet(APIS.agents),apiGet(APIS.voice)
+    ]);
+    // Server
+    if(sStat){
+      $('serverStatus').textContent=sStat.status||'ok';
+      $('serverDot').className='status-dot '+(sStat.status==='ok'?'online':'offline');
+      $('serverSub').textContent=sStat.service||'JARVIS-NEXT';
     }
-    // Fetch current state to determine flow
-    let curState=null;
-    try{
-      const r=await fetch("/jarvis/api/execution/current");
-      curState=await r.json();
-    }catch(e){curState=null;}
-    // Engineering task: route through patch approval + apply
-    if(curState&&curState.detected_mode==="engineering_task"){
-      const b=$(ids.approve);if(b){b.disabled=true;b.textContent="Verifying patch state...";}
-      try{
-        // Step 0: Verify engineering runtime has an active waiting patch
-        let engState=null;
-        try{
-          const e=await fetch("/jarvis/api/engineering/current");
-          engState=await e.json();
-        }catch(e2){engState=null;}
-        const engApproval=engState&&engState.approval_state;
-        const engPatchId=engState&&engState.patch_id;
-        if(!engPatchId||!engApproval){
-          toast("No active patch found in engineering runtime.","✕","er");
-          if(b){b.textContent="Approve Patch & Apply";b.disabled=false;}
-          window.__approvingWork=false;
-          return;
-        }
-        if(engApproval!=="waiting_patch_approval"){
-          toast("Patch is not waiting for approval (state: "+engApproval+").","✕","er");
-          if(b){b.textContent="Approve Patch & Apply";b.disabled=false;}
-          window.__approvingWork=false;
-          return;
-        }
-        // Step 1: Approve the patch with verified patch_id
-        if(b)b.textContent="Approving patch...";
-        const apr=await post("/jarvis/api/engineering/approve",{patch_id:engPatchId});
-        console.log("[approveRun] engineering approve response:",apr);
-        if(!apr.ok){
-          toast("Patch approval failed: "+(apr.message||"unknown"),"✕","er");
-          if(b){b.textContent="Approve Patch & Apply";b.disabled=false;}
-          window.__approvingWork=false;
-          return;
-        }
-        // Step 2: Apply the approved patch with verified patch_id
-        if(b)b.textContent="Applying patch...";
-        const apl=await post("/jarvis/api/engineering/apply",{patch_id:engPatchId});
-        console.log("[approveRun] engineering apply response:",apl);
-        if(apl.ok){
-          toast("Patch applied successfully","✓","ok");
-        }else{
-          toast("Patch apply: "+(apl.message||"unknown"),"⚠","wa");
-        }
-        await refresh();await hist();
-      }catch(e){
-        console.error("[approveRun] engineering approval exception:",e);
-        toast("Patch approval error","✕","er");
-      }
-      if(b){b.textContent="Approve & Run";b.disabled=true;}
-      window.__approvingWork=false;
-      return;
+    // Runtime
+    if(rStat){
+      $('runtimeStatus').textContent=rStat.mode||rStat.runtime||'--';
+      $('runtimeDot').className='status-dot '+(rStat.mode==='active'||rStat.runtime==='ready'?'online':'idle');
+      $('runtimeSub').textContent=rStat.version||'v1.0';
     }
-    // Standard approval flow
-    if(!curReqId){console.warn("[approveRun] no curReqId");window.__approvingWork=false;return;}
-    const b=$(ids.approve);if(b)b.disabled=true;
-    try{
-      const a=await post("/jarvis/api/execution/approve",{request_id:curReqId});
-      console.log("[approveRun] approve response:",a);
-      render(a.state);if(!a.ok){await hist();window.__approvingWork=false;return;}
-      const s=await post("/jarvis/api/execution/run",{request_id:curReqId});
-      console.log("[approveRun] run response:",s);
-      render(s.state);await hist();setTimeout(refresh,600);
-    }catch(e){
-      console.error("[approveRun] approval exception:",e);
-      if(b)b.disabled=false;
-    }
-    window.__approvingWork=false;
-  }
-  async function reject(){
-    console.log("[reject] called, __queuedTask:",!!window.__queuedTask,"curReqId:",curReqId);
-    // If a queued task is pending, reject it
-    if(window.__queuedTask&&window.__queuedTask.command){
-      const cmd2=window.__queuedTask.command;
-      window.__queuedTask=null;
-      toast("Rejected: "+cmd2,"✕","wa");
-      const c=$(ids.curCmd);if(c)c.textContent="Rejected: "+cmd2;
-      const s2=$(ids.status);if(s2)s2.textContent="REJECTED";
-      const l=$(ids.live);if(l){l.textContent="REJECTED";l.className="xs failed";}
-      const b=$(ids.reject);if(b)b.disabled=true;
-      const a=$(ids.approve);if(a){a.disabled=true;a.textContent="Approve & Run";}
-      return;
-    }
-    // Fetch current state to determine flow
-    let curState=null;
-    try{
-      const r=await fetch("/jarvis/api/execution/current");
-      curState=await r.json();
-    }catch(e){curState=null;}
-    // Engineering task: route through patch rejection
-    if(curState&&curState.detected_mode==="engineering_task"){
-      try{
-        let engState=null;
-        try{
-          const e=await fetch("/jarvis/api/engineering/current");
-          engState=await e.json();
-        }catch(e2){engState=null;}
-        const engPatchId=engState&&engState.patch_id;
-        if(!engPatchId){
-          toast("No active patch to reject.","✕","er");
-          return;
-        }
-        const rj=await post("/jarvis/api/engineering/reject",{patch_id:engPatchId,reason:"Rejected from HUD."});
-        console.log("[reject] engineering reject response:",rj);
-        if(rj.ok) toast("Patch rejected.","✕","wa");
-        else toast("Reject failed: "+(rj.message||"unknown"),"✕","er");
-        await refresh();await hist();
-      }catch(e){
-        console.error("[reject] engineering rejection exception:",e);
-      }
-      return;
-    }
-    // Standard rejection flow
-    if(!curReqId){console.warn("[reject] no curReqId");return;}
-    try{
-      const r=await post("/jarvis/api/execution/reject",{request_id:curReqId,reason:"Rejected from HUD."});
-      render(r.state);await hist();
-    }catch(e){
-      console.error("[reject] exception:",e);
-    }
-  }
-  // Reset approve/reject buttons to default state
-  function resetAprButtons(){
-    window.__queuedTask=null;
-    window.__approvingWork=false;
-    const a=$(ids.approve);if(a){a.disabled=true;a.textContent="Approve & Run";}
-    const r=$(ids.reject);if(r){r.disabled=true;r.textContent="Reject";}
-    const h=$(ids.help);if(h)h.textContent="Approval required before execution.";
-    refresh();
-  }
-  document.addEventListener("DOMContentLoaded",function(){
-    const f=$(ids.form),a=$(ids.approve),r=$(ids.reject),rf=$(ids.refresh);
-    if(f)f.addEventListener("submit",submit);
-    if(a)a.addEventListener("click",approveRun);
-    if(r)r.addEventListener("click",reject);
-    if(rf)rf.addEventListener("click",resetAprButtons);
-    refresh();setInterval(refresh,2500);
-  });
-})();
-
-// ===== GLOBAL $ FALLBACK (for functions outside IIFE closure) =====
-if(typeof $==="undefined"){
-  window.$=id=>document.getElementById(id);
-}
-// Safe DOM update helpers
-function safeSetText(id,val,fallback){
-  const el=$d(id);if(el)el.textContent=val??fallback??"";
-}
-function safeSetHTML(id,html){
-  const el=$d(id);if(el)el.innerHTML=html;
-}
-const $d=id=>document.getElementById(id);
-
-// ===== WORKER & SCHEDULER =====
-async function runWorkerTick(){
-  try{
-    console.log("[runWorkerTick] starting worker tick");
-    const r=await fetch("/jarvis/mobile/api/worker/tick",{method:"POST",headers:{"Content-Type":"application/json"}});
-    if(!r.ok)console.warn("[runWorkerTick] HTTP",r.status);
-    const txt=await r.text();
-    let d={};
-    try{d=txt?JSON.parse(txt):{};}catch(e){d={raw:txt};console.error("[runWorkerTick] JSON parse failed:",e);}
-    console.log("[runWorkerTick] response:",d);
-    if(d.processed){
-      toast("Worker tick: "+(d.status||"done"),"⟳","ok");
-      if(d.item){
-        const c1=$d("jarvisCurCmd");
-        if(c1)c1.textContent=d.item.command||"tick";
-        const s1=$d("jarvisExecStatus");
-        if(s1)s1.textContent=(d.status||"DONE").toUpperCase();
-        const l1=$d("jarvisExecLiveStatus");
-        if(l1){l1.textContent=(d.status||"DONE").toUpperCase();l1.className="xs "+(d.status==="completed"?"active":"failed");}
-      }
-    }else{
-      toast("No queued commands","⟳","wa");
-    }
-    refreshJarvis();refreshExecSum();refreshActivity();
-  }catch(e){console.error("[runWorkerTick] exception:",e);toast("Worker tick failed","⟳","er");}
-}
-async function runAutoScheduler(){
-  try{
-    console.log("[runAutoScheduler] starting");
-    const r=await fetch("/jarvis/mobile/api/scheduler/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({interval:1,max_ticks:3})});
-    const txt=await r.text();
-    let d={};
-    try{d=txt?JSON.parse(txt):{};}catch(e){d={raw:txt};}
-    console.log("[runAutoScheduler] response:",d);
-    toast("Scheduler: "+(d.ticks||0)+" ticks / idle "+(d.idle_count||0),"⏱","ok");
-    refreshJarvis();refreshExecSum();refreshActivity();
-  }catch(e){console.error("[runAutoScheduler] exception:",e);toast("Scheduler failed","⏱","er");}
-}
-
-// ===== MAIN RUNTIME REFRESH =====
-async function refreshJarvis(){
-  try{
-    const r=await fetch("/jarvis/mobile/api/status");
-    if(!r.ok){console.warn("[refreshJarvis] HTTP",r.status);return;}
-    const txt=await r.text();
-    let d={};
-    try{d=txt?JSON.parse(txt):{};}catch(e){d={};console.error("[refreshJarvis] JSON parse:",e);}
-    const st=d.health?.status||d.status||"online";
-    const stTxt=document.getElementById("hudStatusText");
-    if(stTxt)stTxt.textContent=st.toUpperCase();
-
-    const sysSt=$d("hudSysStatus"),sysMo=$d("hudSysMode"),sysRt=$d("hudSysRuntime"),voSt=$d("hudVoiceStatus");
-    if(sysSt)sysSt.textContent=st;
-    if(sysMo)sysMo.textContent=d.runtime?.mode||d.mode||"simulation_ready";
-    if(sysRt)sysRt.textContent=d.permissions?.profile||d.runtime||"ready";
-    if(voSt)voSt.textContent=d.runtime?.voice_enabled?"ENABLED":(d.voice||"disabled");
-
-    const sDot=$d("hudDotSys");
-    if(sDot){
-      const hl=(d.health?.status||"").toLowerCase();
-      sDot.style.background=hl==="online"?"#00ff88":hl==="warning"?"#ffaa00":"#ff0044";
-      sDot.style.boxShadow=hl==="online"?"0 0 8px #00ff88":hl==="warning"?"0 0 8px #ffaa00":"0 0 8px #ff0044";
-    }
-
-    // Hologram identity
-    const idSt=$d("idStatus");
-    if(idSt)idSt.innerHTML='<span style="color:#00ff88">●</span> '+(d.health?.status?.toUpperCase()||"ONLINE");
-    const idMo=$d("idMode");
-    if(idMo)idMo.textContent=d.runtime?.mode||d.mode||"simulation_ready";
-    const idDes=$d("idDesignation");
-    if(idDes)idDes.textContent="JARVIS-CORE-"+((d.health?.uptime_seconds||"").slice(0,4)||"001");
-
-    // Voice
-    const vDet=$d("hudVoiceDetail"),vLis=$d("hudVoiceListening");
-    if(vDet)vDet.textContent=d.runtime?.voice_enabled?"ENABLED":"DISABLED";
-    if(vLis)vLis.textContent=d.runtime?.voice_enabled?"LISTENING...":"DISABLED";
-
-    // Tasks — filter Active (queued/running/waiting) vs history (completed/rejected)
-    const tq=$d("hudTaskQueue");
-    if(tq&&d.command_queue){
-      tq.innerHTML="";
-      const active = d.command_queue.filter(c => ["queued","running","waiting","WAITING_APPROVAL","APPROVED"].includes((c.status||"").toLowerCase()));
-      const history = d.command_queue.filter(c => ["completed","rejected","failed","blocked","rolled_back"].includes((c.status||"").toLowerCase()));
-      if(!active.length){
-        if(!history.length){
-          tq.innerHTML='<div class="task-row"><span class="mark ok"></span><span class="nm">No queued commands</span><span class="pc">0</span></div>';
-        }else{
-          // Show "All tasks done" with count
-          tq.innerHTML='<div class="task-row"><span class="mark ok"></span><span class="nm">All tasks done</span><span class="pc">'+history.length+' done</span></div>';
-        }
-      }else{
-        active.slice(-5).reverse().forEach(c=>{
-          const cmdSafe=String(c.command||"").replace(/[&<>"]/g,"").slice(0,50);
-          const st=c.status||"?";
-          const markCls=st==="WAITING_APPROVAL"||st==="waiting"?"wa":st==="queued"?"go":st==="running"||st==="APPROVED"?"ok":"go";
-          tq.innerHTML+=`<div class="task-row"><span class="mark ${markCls}"></span><span class="nm">${cmdSafe}</span><span class="pc">${st}</span></div>`;
-        });
-      }
-    }
-
     // Agents
-    if(d.agents&&d.agents.length){
-      const al=$d("hudAgentList");
-      if(al){
-        al.innerHTML="";
-        (d.agents||[]).forEach(a=>{
-          const n=typeof a==="string"?a:(a.agent_id||a.name||"Agent");
-          al.innerHTML+=`<div class="agent-row"><div class="a-icon">A</div><span class="a-name">${String(n).replace(/[&<>]/g,"")}</span><span class="a-status">ONLINE</span></div>`;
-        });
-      }
+    if(agents&&agents.agents){
+      const avail=agents.agents.filter(a=>a.status==='available').length;
+      $('agentCount').textContent=avail+'/'+agents.agents.length;
+      $('agentSub').textContent='available';
+      renderAgents(agents.agents);
     }
-
-    // Logs
-    const lf=$d("hudSysLog");
-    if(lf){
-      const ev=(d.events||[]).slice(-6).reverse();
-      if(!ev.length){
-        lf.innerHTML='<div class="log-line"><span class="lt">--:--:--</span><span class="lm">No runtime events yet</span></div>';
+    // Voice
+    if(voice){
+      $('voiceStatus').textContent=voice.enabled?'enabled':'disabled';
+      $('voiceDot').className='status-dot '+(voice.enabled?'online':'offline');
+      $('voiceSub').textContent=voice.muted?'muted':(voice.stt_provider||'browser');
+      $('voiceLabel').textContent=voice.enabled?(voice.muted?'muted':'active'):'off';
+      const vd=$('voiceDetails');
+      if(voice.enabled){
+        vd.innerHTML='STT: '+(voice.stt_provider||'browser')+' &middot; TTS: '+(voice.tts_provider||'browser');
       }else{
-        lf.innerHTML=ev.map(e=>{
-          const t=(e.timestamp||"").split("T")[1]||"--:--:--",tp=e.event_type||"event",st2=e.status||"info";
-          const cls=st2==="completed"||st2==="ok"?"ok":st2==="warning"?"wa":st2==="error"||st2==="failed"?"er":"";
-          return `<div class="log-line"><span class="lt">${t}</span><span class="lm ${cls}">${tp} — ${st2}</span></div>`;
-        }).join("");
+        vd.textContent='Voice disabled';
       }
     }
-  }catch(e){console.error("[refreshJarvis] failed",e);}
-}
-
-// ===== EXECUTION SUMMARY =====
-async function refreshExecSum(){
-  try{
-    const r=await fetch("/jarvis/mobile/api/runtime/execution-summary");
-    if(!r.ok){console.warn("[refreshExecSum] HTTP",r.status);return;}
-    const txt=await r.text();
-    let d={};
-    try{d=txt?JSON.parse(txt):{};}catch(e){d={};console.error("[refreshExecSum] JSON parse:",e);}
-    const sets=[
-      {ids:["rtActive","projActive","runtime-active-count"],v:d.active_count??0},
-      {ids:["rtComplete","projComplete","runtime-completed-count"],v:d.completed_count??0},
-      {ids:["rtFailed","projFailed","runtime-failed-count"],v:d.failed_count??0},
-    ];
-    sets.forEach(s=>s.ids.forEach(id=>{const e=$d(id);if(e)e.textContent=s.v;}));
-    const sr=$d("projSched"),se=$d("scheduler-efficiency");
-    if(d.scheduler){if(sr)sr.textContent=d.scheduler.runs??0;if(se)se.textContent=(d.scheduler.efficiency_percent??0)+"%";}
-    const lt=$d("projLatest");
-    if(lt){
-      if(d.latest_task){
-        lt.textContent="Latest: "+(d.latest_task.command||"?")+" / "+(d.latest_task.status||"?");
-      }else if(d.latest_session){
-        lt.textContent="Latest: "+(d.latest_session.command_type||"runtime")+" / "+d.latest_session.status;
-      }else{
-        lt.textContent="Latest: none";
-      }
-    }
-    // Update worker status display
-    const ws=$d("worker-status");
-    if(ws&&d.worker){
-      const w=d.worker;
-      ws.textContent=w.status||"idle";
-      ws.style.color=w.status==="running"?"#00f0ff":"rgba(0,240,255,.4)";
-      const wc=$d("worker-command");
-      if(wc)wc.textContent=w.last_command||"-";
-      const wr=$d("worker-result");
-      if(wr)wr.textContent=w.last_result||"-";
-      const wh=$d("worker-heartbeat");
-      if(wh)wh.textContent=w.last_heartbeat?(w.last_heartbeat.slice(11,19)):"-";
-    }
-  }catch(e){console.error("[refreshExecSum] failed",e);}
-}
-
-// ===== ACTIVITY FEED =====
-async function refreshActivity(){try{await fetch("/jarvis/mobile/api/runtime/activity-feed");}catch(e){}}
-
-// ===== SNAPSHOT LOADERS (preserved for background data) =====
-async function loadSnap(url,fields){try{const r=await fetch(url),d=await r.json();return d;}catch(e){return null;}}
-async function loadCorrelation(){const d=await loadSnap("/jarvis/mobile/api/runtime/correlation");if(!d)return;
-  const e1=$( "runtime-correlation-strength"),e2=$( "runtime-correlation-forecast"),e3=$( "runtime-correlation-risk"),e4=$( "runtime-correlation-insights");
-  if(e1)e1.textContent=d.correlation_strength||"unknown";if(e2)e2.textContent=d.forecast_state||"unknown";if(e3)e3.textContent=d.escalation_risk||"unknown";
-  if(e4){const i=Array.isArray(d.correlation_insights)?d.correlation_insights:[];e4.innerHTML=i.length?i.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No insights.</div>';}
-}
-async function loadInsights(){const d=await loadSnap("/jarvis/mobile/api/runtime/insights");if(!d)return;
-  const c=$( "runtime-insight-count"),l=$( "runtime-insight-list");
-  if(c)c.textContent=d.insight_count??0;
-  if(l){const i=Array.isArray(d.insights)?d.insights:[];l.innerHTML=i.length?i.map(x=>{const m=typeof x==="string"?x:(x.message||"Insight");return '<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+m+'</div>';}).join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No insights.</div>';}
-}
-async function loadERP(){const d=await loadSnap("/jarvis/mobile/api/erp/intelligence");if(!d)return;
-  const s=d.summary||{};
-  const e1=$( "erp-route-count"),e2=$( "erp-template-count"),e3=$( "erp-module-count"),e4=$( "erp-static-count"),e5=$( "erp-autonomy"),e6=$( "erp-route-categories");
-  if(e1)e1.textContent=s.route_count??0;if(e2)e2.textContent=s.template_count??0;if(e3)e3.textContent=s.module_count??0;if(e4)e4.textContent=s.static_file_count??0;if(e5)e5.textContent=d.autonomy||"unknown";
-  if(e6){const c=s.route_categories||{};const r=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([n,c])=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+n+': '+c+'</div>');e6.innerHTML=r.length?r.join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No categories.</div>';}
-  const e7=$( "erp-relationship-domains"),e8=$( "erp-domain-map"),e9=$( "erp-architecture-notes");
-  const rel=d.relationships||{},dm=rel.domain_map||{};
-  if(e7)e7.textContent=s.relationship_domains??Object.keys(dm).length;
-  if(e8){const r=Object.entries(dm).sort((a,b)=>((b[1].templates||0)+(b[1].modules||0))-((a[1].templates||0)+(a[1].modules||0))).map(([n,v])=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+n+' — t:'+(v.templates||0)+' m:'+(v.modules||0)+'</div>');e8.innerHTML=r.length?r.join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No domains.</div>';}
-  if(e9){const n=Array.isArray(rel.architecture_notes)?rel.architecture_notes.slice(0,8):[];e9.innerHTML=n.length?n.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No notes.</div>';}
-}
-async function loadSupervision(){const d=await loadSnap("/jarvis/mobile/api/runtime/supervision");if(!d)return;
-  const s=d.summary||{},e1=$( "runtime-supervision-state"),e2=$( "runtime-supervision-warnings"),e3=$( "runtime-supervision-watch"),e4=$( "runtime-supervision-healthy");
-  if(e1)e1.textContent=d.overall_state||"unknown";if(e2)e2.textContent=s.warning_domains??0;if(e3)e3.textContent=s.watch_domains??0;if(e4)e4.textContent=s.healthy_domains??0;
-  const e5=$( "runtime-supervision-findings"),e6=$( "runtime-supervision-notes");
-  if(e5){const f=Array.isArray(d.domain_findings)?d.domain_findings:[];e5.innerHTML=f.length?f.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.domain||'')+' · '+(x.severity||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No findings.</div>';}
-  if(e6){const n=Array.isArray(d.supervision_notes)?d.supervision_notes.slice(0,8):[];e6.innerHTML=n.length?n.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No notes.</div>';}
-}
-async function loadDrift(){const d=await loadSnap("/jarvis/mobile/api/architecture/drift");if(!d)return;
-  const e1=$( "architecture-drift-state"),e2=$( "architecture-drift-score"),e3=$( "architecture-drift-history"),e4=$( "architecture-drift-notes");
-  if(e1)e1.textContent=d.drift_state||"unknown";if(e2)e2.textContent=d.drift_score??0;if(e3)e3.textContent=d.history_count??0;
-  if(e4){const n=Array.isArray(d.drift_notes)?d.drift_notes:[];e4.innerHTML=n.length?n.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No notes.</div>';}
-}
-async function loadTrends(){const d=await loadSnap("/jarvis/mobile/api/architecture/trends");if(!d)return;
-  const e1=$( "structural-trend-state"),e2=$( "structural-trend-score"),e3=$( "structural-trend-history"),e4=$( "structural-trend-notes"),e5=$( "structural-domain-movement");
-  if(e1)e1.textContent=d.forecast_state||"unknown";if(e2)e2.textContent=d.forecast_score??0;if(e3)e3.textContent=d.history_count??0;
-  if(e4){const n=Array.isArray(d.trend_notes)?d.trend_notes:[];e4.innerHTML=n.length?n.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No notes.</div>';}
-  if(e5){const m=Array.isArray(d.domain_trends)?d.domain_trends:[];e5.innerHTML=m.length?m.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.domain||'')+' · '+(x.direction||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No movement.</div>';}
-}
-async function loadRecs(){const d=await loadSnap("/jarvis/mobile/api/architecture/recommendations");if(!d)return;
-  const s=d.summary||{};
-  const e1=$( "engineering-high-priority"),e2=$( "engineering-medium-priority"),e3=$( "engineering-low-priority"),e4=$( "engineering-recommendations-feed"),e5=$( "engineering-strategic-notes");
-  if(e1)e1.textContent=s.high_priority??0;if(e2)e2.textContent=s.medium_priority??0;if(e3)e3.textContent=s.low_priority??0;
-  if(e4){const r=Array.isArray(d.recommendations)?d.recommendations:[];e4.innerHTML=r.length?r.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.domain||'')+' · '+(x.type||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No recommendations.</div>';}
-  if(e5){const n=Array.isArray(d.strategic_notes)?d.strategic_notes:[];e5.innerHTML=n.length?n.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+x+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No notes.</div>';}
-}
-async function loadHotspots(){const d=await loadSnap("/jarvis/mobile/api/architecture/hotspots");if(!d)return;
-  const s=d.summary||{};
-  const e1=$( "hotspots-total"),e2=$( "hotspots-high-risk"),e3=$( "hotspots-route-dense"),e4=$( "hotspots-feed"),e5=$( "fragile-zones-feed");
-  if(e1)e1.textContent=s.hotspots_found??0;if(e2)e2.textContent=s.high_risk_files??0;if(e3)e3.textContent=s.route_dense_files??0;
-  if(e4){const h=Array.isArray(d.top_hotspots)?d.top_hotspots.slice(0,6):[];e4.innerHTML=h.length?h.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.file||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No hotspots.</div>';}
-  if(e5){const f=Array.isArray(d.fragile_zones)?d.fragile_zones.slice(0,6):[];e5.innerHTML=f.length?f.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.file||'')+' — '+(x.reason||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No fragile zones.</div>';}
-}
-async function loadPriorities(){const d=await loadSnap("/jarvis/mobile/api/architecture/priorities");if(!d)return;
-  const s=d.summary||{},e1=$( "priority-critical"),e2=$( "priority-high"),e3=$( "priority-medium"),e4=$( "priority-feed");
-  if(e1)e1.textContent=s.critical??0;if(e2)e2.textContent=s.high??0;if(e3)e3.textContent=s.medium??0;
-  if(e4){const p=Array.isArray(d.priorities)?d.priorities.slice(0,6):[];e4.innerHTML=p.length?p.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.priority||'')+' '+(x.file||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No priorities.</div>';}
-}
-async function loadDeps(){const d=await loadSnap("/jarvis/mobile/api/architecture/dependency-reasoning");if(!d)return;
-  const s=d.summary||{};
-  const e1=$( "dependency-high-cascade"),e2=$( "dependency-medium-cascade"),e3=$( "dependency-low-cascade"),e4=$( "dependency-feed"),e5=$( "dependency-sequences-feed");
-  if(e1)e1.textContent=s.high_cascade??0;if(e2)e2.textContent=s.medium_cascade??0;if(e3)e3.textContent=s.low_cascade??0;
-  if(e4){const r=Array.isArray(d.dependency_reasoning)?d.dependency_reasoning.slice(0,5):[];e4.innerHTML=r.length?r.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.4)">'+(x.cascade_risk||'')+' '+(x.file||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No reasoning.</div>';}
-  if(e5){const r=Array.isArray(d.dependency_reasoning)?d.dependency_reasoning.slice(0,5):[];e5.innerHTML=r.length?r.map(x=>'<div style="font-size:8px;padding:1px 0;color:rgba(0,240,255,.3)">'+(x.file||'')+'</div>').join(""):'<div style="font-size:8px;color:rgba(0,240,255,.2)">No sequences.</div>';}
-}
-
-// ===== TOAST SYSTEM =====
-function toast(msg,icon,type){
-  const c=document.getElementById("toastCont");if(!c)return;
-  const t=document.createElement("div");t.className="toast"+(type?" "+type:"");
-  t.innerHTML='<span class="ti">'+(icon||'◉')+'</span><span class="tm">'+msg+'</span><span class="tc" onclick="this.parentElement.classList.add(\'tOut\');setTimeout(()=>this.parentElement.remove(),300)">X</span>';
-  c.appendChild(t);
-  setTimeout(()=>{t.classList.add("tOut");setTimeout(()=>t.remove(),300);},3500);
-}
-
-// ===== RUNTIME DEBUG OVERLAY REFRESH =====
-let __rtDebug={lastPostResponse:null,lastException:null,lastQueuedCommand:null,lastWorkerStatus:null,lastTaskStatus:null,queueSize:0};
-async function refreshRtDebugOverlay(){
-  const c=$d("rtDebugContent");if(!c)return;
-  try{
-    const r=await fetch("/jarvis/mobile/api/runtime/execution-summary");
-    if(r.ok){
-      const d=await r.json();
-      __rtDebug.lastWorkerStatus=d.worker?.status||"unknown";
-      __rtDebug.lastTaskStatus=d.latest_task?.status||"none";
-      __rtDebug.queueSize=(d.queue||[]).length;
-    }
-  }catch(e){/* overlay continues with stale data */}
-  const qs=__rtDebug.queueSize;
-  c.innerHTML=
-    '<div style="color:rgba(0,240,255,.4)">Queue Size</div><div style="color:#c0e4f0;float:right">'+qs+'</div>'+
-    '<div style="color:rgba(0,240,255,.4)">Last Queued</div><div style="color:#c0e4f0;float:right">'+(__rtDebug.lastQueuedCommand||"-")+'</div>'+
-    '<div style="color:rgba(0,240,255,.4)">Worker</div><div style="color:'+(__rtDebug.lastWorkerStatus==="running"?"#00f0ff":"rgba(0,240,255,.4)")+';float:right">'+(__rtDebug.lastWorkerStatus||"-")+'</div>'+
-    '<div style="color:rgba(0,240,255,.4)">Task Status</div><div style="color:#c0e4f0;float:right">'+(__rtDebug.lastTaskStatus||"-")+'</div>'+
-    '<div style="color:rgba(0,240,255,.4)">Last Exception</div><div style="color:#ff6666;float:right;max-width:140px;overflow:hidden;text-overflow:ellipsis">'+(__rtDebug.lastException?"Y":"-")+'</div>'+
-    '<div style="color:rgba(0,240,255,.4)">Post Response</div><div style="color:#c0e4f0;float:right;max-width:140px;overflow:hidden;text-overflow:ellipsis">'+(__rtDebug.lastPostResponse?JSON.stringify(__rtDebug.lastPostResponse).slice(0,40):"-")+'</div>';
-}
-
-// ===== DEBUG PANEL =====
-let dbgOpen=false;
-let dbgDblClick=false;
-function toggleDebug(){
-  const p=document.getElementById("dbgPnl");if(!p)return;
-  dbgOpen=!dbgOpen;p.classList.toggle("op",dbgOpen);
-  if(dbgOpen)refreshDebug();
-  // Double-click toggles RT debug overlay
-  if(dbgDblClick){
-    const rt=$d("rtDebugOverlay");
-    if(rt)rt.style.display=rt.style.display==="none"?"block":"none";
-    if(rt&&rt.style.display==="block")refreshRtDebugOverlay();
-    dbgDblClick=false;
-  }else{
-    dbgDblClick=true;
-    setTimeout(()=>{dbgDblClick=false;},500);
   }
-}
-async function refreshDebug(){
-  const c=document.getElementById("dbgContent");if(!c||!dbgOpen)return;
-  const endpoints=[
-    {name:"status",url:"/jarvis/mobile/api/status"},
-    {name:"exec-summary",url:"/jarvis/mobile/api/runtime/execution-summary"},
-    {name:"insight-snapshot",url:"/jarvis/mobile/api/runtime/insight-snapshot"},
-    {name:"exec-current",url:"/jarvis/api/execution/current"},
-    {name:"system-health",url:"/jarvis/api/system-health"},
-    {name:"activity-feed",url:"/jarvis/mobile/api/runtime/activity-feed"},
-    {name:"correlation",url:"/jarvis/mobile/api/runtime/correlation"},
-    {name:"insights",url:"/jarvis/mobile/api/runtime/insights"},
-    {name:"erp-intel",url:"/jarvis/mobile/api/erp/intelligence"},
-    {name:"supervision",url:"/jarvis/mobile/api/runtime/supervision"},
-    {name:"drift",url:"/jarvis/mobile/api/architecture/drift"},
-    {name:"trends",url:"/jarvis/mobile/api/architecture/trends"},
-    {name:"recs",url:"/jarvis/mobile/api/architecture/recommendations"},
-    {name:"hotspots",url:"/jarvis/mobile/api/architecture/hotspots"},
-    {name:"priorities",url:"/jarvis/mobile/api/architecture/priorities"},
-    {name:"deps",url:"/jarvis/mobile/api/architecture/dependency-reasoning"},
-  ];
-  let html='<div class="dbg-r"><span class="dl">LAST ACTION</span><span class="dv" id="dbgLastAction">--</span></div>';
-  html+='<div class="dbg-r"><span class="dl">WORKING BTNS</span><span class="dv ok">6/6</span></div>';
-  for(const ep of endpoints){
-    try{
-      const r=await fetch(ep.url,{signal:AbortSignal.timeout(3000)});
-      const s=r.ok?"ok":"er";
-      html+=`<div class="dbg-r"><span class="dl">${ep.name}</span><span class="dv ${s}">${r.status}</span></div>`;
-    }catch(e){
-      html+=`<div class="dbg-r"><span class="dl">${ep.name}</span><span class="dv er">ERR</span></div>`;
-    }
-  }
-  c.innerHTML=html;
-}
 
-// ===== DOCK BUTTON HANDLERS =====
-// Voice Control: shows voice panel information + toast
-function dockVoice(){
-  const v=document.querySelector(".vox");
-  if(v){v.scrollIntoView({behavior:"smooth"});v.style.border="1px solid rgba(0,240,255,.3)";setTimeout(()=>v.style.border="",2000);}
-  toast("Voice panel opened","♪","ok");
-  logAction("voice_control");
-}
-// Open Runtime: refreshes all runtime APIs instead of page reload
-async function dockRuntime(){
-  toast("Refreshing runtime APIs...","⟳","");
-  logAction("open_runtime");
-  await Promise.allSettled([refreshJarvis(),refreshExecSum(),refreshActivity()]);
-  await loadInsightSnapshot();
-  toast("Runtime refreshed","⟳","ok");
-}
-// Create Task: queue a command from the input to the worker queue
-async function dockTask(){
-  const inp=document.getElementById("jarvisExecInput");
-  const cmd=inp?inp.value.trim():"";
-  if(!cmd){toast("Enter a command first","+","wa");if(inp){inp.focus();}return;}
-  try{
-    console.log("[dockTask] queue command:",cmd);
-    const r=await post("/jarvis/mobile/api/command",{command:cmd,source:"mobile_hud_dock"});
-    console.log("[dockTask] response:",r);
-    __rtDebug.lastPostResponse=r;
-    __rtDebug.lastQueuedCommand=cmd;
-    if(r&&r.accepted){
-      toast("Task queued: "+cmd,"+","ok");
-      const tid=(r.command_id||"").slice(0,8)||"????";
-      logAction("create_task_"+tid);
-      if(typeof setDebugPanel==="function")setDebugPanel({lastTaskId:r.command_id,lastCommand:cmd,status:"queued"});
-      // Reflect in execution console
-      const curCmd=document.getElementById("jarvisCurCmd");
-      if(curCmd)curCmd.textContent=cmd;
-      const st=document.getElementById("jarvisExecStatus");
-      if(st)st.textContent="QUEUED";
-      const live=document.getElementById("jarvisExecLiveStatus");
-      if(live){live.textContent="QUEUED";live.className="xs active";}
-      // Set global queued state for approveRun/reject
-      window.__queuedTask={command:cmd,command_id:r.command_id};
-      // Enable approval zone
-      const aprHelp=document.getElementById("jarvisAprHelp");
-      if(aprHelp)aprHelp.textContent="Task queued. Approve to process via worker tick, or Reject to cancel.";
-      const apBtn=document.getElementById("jarvisApproveBtn");
-      if(apBtn){apBtn.disabled=false;apBtn.textContent="Process Now";}
-      const rjBtn=document.getElementById("jarvisRejectBtn");
-      if(rjBtn)rjBtn.disabled=false;
-    }else{
-      const reason=r?.reason||"not allowed";
-      console.warn("[dockTask] command rejected:",reason);
-      toast("Command not allowed: "+cmd,"+","er");
-    }
-  }catch(e){
-    console.error("[dockTask] exception — check if backend actually failed:",e);
-    __rtDebug.lastException=e.message||String(e);
-    // Safe UI Recovery Layer: never show "Queue failed" if backend might have succeeded
-    if(__rtDebug.lastPostResponse&&__rtDebug.lastPostResponse.accepted){
-      toast("Queued successfully but UI sync recovered","+","ok");
-    }else{
-      toast("Network issue — check console","+","er");
-    }
+  // Render agents
+  function renderAgents(agents){
+    const el=$('agentList');
+    if(!agents||agents.length===0){el.innerHTML='<div class="empty-state">No agents</div>';return}
+    el.innerHTML=agents.map(a=>{
+      const s=a.status||'unknown';
+      const sc=s==='available'?'available':s==='unavailable'||s==='error'?'unavailable':'checking';
+      return '<div class="agent-item"><span class="agent-name">'+(a.name||a.agent_id||'Agent')+'</span><span class="agent-status '+sc+'">'+s+'</span></div>';
+    }).join('');
   }
-  logAction("create_task_attempt");
-}
-// Agent Society: scrolls to agent panel + highlights it
-function dockAgents(){
-  const al=document.getElementById("hudAgentList");
-  if(al){
-    const p=al.closest(".panel");
-    if(p){p.scrollIntoView({behavior:"smooth"});p.style.border="1px solid rgba(0,240,255,.3)";setTimeout(()=>p.style.border="",2000);}
-  }
-  toast("Agent Society panel","⟐","ok");
-  logAction("agent_society");
-}
-// Database Access: shows system health in settings panel or opens URL
-async function dockDb(){
-  try{
-    const r=await fetch("/jarvis/api/system-health");
-    const d=await r.json();
-    const html=document.getElementById("settingsBody");
-    if(html&&d){
-      // Health score bar color
-      const sc=d.health_score||0;
-      const scColor=sc>=80?'#00ff88':sc>=50?'#ffaa00':sc>=20?'#ff8800':'#ff0044';
-      // Overall status color
-      const st=d.status||"unknown";
-      const stColor=st==='online'?'#00ff88':st==='warning'?'#ffaa00':st==='degraded'?'#ff8800':'#ff0044';
-      let svcHtml='';
-      if(d.services&&d.services.length){
-        svcHtml=d.services.map(s=>{
-          const sc2=s.status==='online'?'#00ff88':s.status==='degraded'?'#ffaa00':'#ff0044';
-          return '<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:8px;border-bottom:1px solid rgba(0,240,255,.03)">'+
-            '<span style="color:rgba(0,240,255,.4)">'+s.name+'</span>'+
-            '<span style="color:'+sc2+'">● '+s.status+'</span></div>';
-        }).join("");
-      }
-      let warnHtml='';
-      if(d.warnings&&d.warnings.length){
-        warnHtml='<div style="margin-top:6px;"><div style="color:#ffaa00;font-size:9px;letter-spacing:1px;text-transform:uppercase;">⚠ Warnings</div>'+
-          d.warnings.slice(0,4).map(w=>'<div style="font-size:8px;color:rgba(255,170,0,.6);padding:1px 0;">• '+w+'</div>').join("")+'</div>';
-      }
-      html.innerHTML=
-        // Health Score circle
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+
-          '<div style="width:48px;height:48px;border-radius:50%;border:2px solid '+scColor+';display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 12px '+scColor.replace(')',')').replace('rgb','rgba').replace('#00ff88','rgba(0,255,136,.3)').replace('#ffaa00','rgba(255,170,0,.3)').replace('#ff8800','rgba(255,136,0,.3)').replace('#ff0044','rgba(255,0,68,.3)')+';">'+
-            '<span style="font-size:14px;font-weight:bold;color:'+scColor+';">'+sc+'</span>'+
-          '</div>'+
-          '<div>'+
-            '<div style="font-size:11px;color:'+stColor+';letter-spacing:2px;text-transform:uppercase;">'+st+'</div>'+
-            '<div style="font-size:8px;color:rgba(0,240,255,.3);">Health Score</div>'+
-          '</div>'+
-        '</div>'+
-        // Services
-        '<div style="margin-bottom:6px;"><div style="color:rgba(0,240,255,.4);font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">⟐ Services</div>'+svcHtml+'</div>'+
-        // Stats row
-        (d.stats?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin:4px 0;font-size:8px;">'+
-          (d.stats.db_size_mb!==undefined?'<div style="color:rgba(0,240,255,.3);">DB Size</div><div style="color:#c0e4f0;">'+d.stats.db_size_mb+' MB</div>':'')+
-          (d.stats.ram_pct!==undefined?'<div style="color:rgba(0,240,255,.3);">RAM</div><div style="color:#c0e4f0;">'+d.stats.ram_pct+'%</div>':'')+
-          (d.stats.disk_free_gb!==undefined?'<div style="color:rgba(0,240,255,.3);">Disk Free</div><div style="color:#c0e4f0;">'+d.stats.disk_free_gb+' GB</div>':'')+
-          (d.stats.routes!==undefined?'<div style="color:rgba(0,240,255,.3);">Routes</div><div style="color:#c0e4f0;">'+d.stats.routes+'</div>':'')+
-          (d.stats.api_endpoints_ok!==undefined?'<div style="color:rgba(0,240,255,.3);">Endpoints</div><div style="color:#c0e4f0;">'+d.stats.api_endpoints_ok+'/'+d.stats.api_endpoints_total+'</div>':'')+
-          (d.stats.runtime_memory_files!==undefined?'<div style="color:rgba(0,240,255,.3);">Mem Files</div><div style="color:#c0e4f0;">'+d.stats.runtime_memory_files+'</div>':'')+
-        '</div>':'')+
-        // Database + Migration indicators
-        '<div style="display:flex;gap:8px;margin-top:4px;">'+
-          '<div style="display:flex;align-items:center;gap:4px;font-size:8px;"><span style="width:5px;height:5px;border-radius:50%;background:'+(d.database?'#00ff88':'#ff0044')+';box-shadow:0 0 5px '+(d.database?'#00ff88':'#ff0044')+'"></span>DB</div>'+
-          '<div style="display:flex;align-items:center;gap:4px;font-size:8px;"><span style="width:5px;height:5px;border-radius:50%;background:'+(d.migration?'#00ff88':'#ffaa00')+';box-shadow:0 0 5px '+(d.migration?'#00ff88':'#ffaa00')+'"></span>Migration</div>'+
-        '</div>'+
-        // Warnings
-        warnHtml;
-    }
-    openSettings();
-    toast("System health loaded — score: "+d.health_score,"⌂","ok");
-  }catch(e){
-    toast("Health API unavailable — showing fallback","⌂","wa");
-    try{window.location.href="/system-health";}catch(ex){}
-  }
-  logAction("db_access");
-}
-// System Settings: open settings panel with health data
-async function dockSettings(){
-  // Try to fetch fresh health data
-  try{
-    const r=await fetch("/jarvis/api/system-health");
-    const d=await r.json();
-    const html=document.getElementById("settingsBody");
-    if(html&&d&&d.health_score!==undefined){
-      const sc=d.health_score||0;
-      const scColor=sc>=80?'#00ff88':sc>=50?'#ffaa00':sc>=20?'#ff8800':'#ff0044';
-      html.innerHTML='<div style="text-align:center;padding:8px;">'+
-        '<div style="width:52px;height:52px;border-radius:50%;border:2px solid '+scColor+';display:flex;align-items:center;justify-content:center;margin:0 auto 8px;box-shadow:0 0 15px '+scColor+';">'+
-          '<span style="font-size:16px;font-weight:bold;color:'+scColor+';">'+sc+'</span></div>'+
-        '<div style="font-size:11px;color:'+(d.status==='online'?'#00ff88':d.status==='warning'?'#ffaa00':'#ff0044')+';letter-spacing:2px;text-transform:uppercase;">'+d.status+'</div>'+
-        '<div style="font-size:8px;color:rgba(0,240,255,.3);margin-top:2px;">System Health Score</div>'+
-        '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;">'+
-          '<div style="color:rgba(0,240,255,.4);">DB</div><div style="color:'+(d.database?'#00ff88':'#ff0044')+';">'+(d.database?'Connected':'Disconnected')+'</div>'+
-          '<div style="color:rgba(0,240,255,.4);">Migration</div><div style="color:'+(d.migration?'#00ff88':'#ffaa00')+';">'+(d.migration?'OK':'Pending')+'</div>'+
-          (d.stats?.ram_pct!==undefined?'<div style="color:rgba(0,240,255,.4);">RAM</div><div style="color:#c0e4f0;">'+d.stats.ram_pct+'%</div>':'')+
-          (d.stats?.disk_free_gb!==undefined?'<div style="color:rgba(0,240,255,.4);">Disk</div><div style="color:#c0e4f0;">'+d.stats.disk_free_gb+' GB free</div>':'')+
-        '</div>';
-      if(d.warnings&&d.warnings.length){
-        html.innerHTML+='<div style="margin-top:6px;font-size:8px;color:#ffaa00;">'+d.warnings.slice(0,3).map(w=>'• '+w).join('<br>')+'</div>';
-      }
-    }
-  }catch(e){/* use fallback template data */}
-  openSettings();
-  toast("Settings panel opened","⚙","");
-  logAction("system_settings");
-}
-function openSettings(){
-  const p=document.getElementById("settingsPanel");
-  if(p)p.style.display="flex";
-}
-function closeSettings(){
-  const p=document.getElementById("settingsPanel");
-  if(p)p.style.display="none";
-}
-// Last action tracker
-function logAction(action){
-  const e=document.getElementById("dbgLastAction");
-  if(e)e.textContent=action+" @"+new Date().toLocaleTimeString();
-}
 
-// ===== INSIGHT SNAPSHOT LOADER =====
-async function loadInsightSnapshot(){
-  try{
-    const r=await fetch("/jarvis/mobile/api/runtime/insight-snapshot");
-    if(!r.ok)return;
-    const txt=await r.text();
-    const d=txt?JSON.parse(txt):{};
-    const idDes=$d("idDesignation");
-    if(idDes&&d.system_status)idDes.textContent="JARVIS-CORE";
-    const idSt=$d("idStatus");
-    if(idSt)idSt.innerHTML='<span style="color:'+(d.system_status==="online"?"#00ff88":"#ffaa00")+'">●</span> '+(d.system_status||"UNKNOWN").toUpperCase();
-    if(d.agents_count!==undefined){
-      const ac=$d("rtActive");if(ac)ac.textContent=d.active_count??0;
-      const cc=$d("rtComplete");if(cc)cc.textContent=d.completed_count??0;
-      const fc=$d("rtFailed");if(fc)fc.textContent=d.failed_count??0;
-    }
-  }catch(e){/* snapshot unavailable */}
-}
+  // Update timeline & tasks
+  async function updateTasks(){
+    const [all,active]=await Promise.all([
+      apiGet(APIS.tasks),apiGet(APIS.active)
+    ]);
+    const tasks=all||[];
+    const total=tasks.length;
 
-// ===== EXECUTION MODE & PATCH CONTROLS =====
-async function enableSupervisedExecution(){
-  try{
-    const r=await post("/jarvis/mobile/api/runtime/execution-mode",{mode:"supervised_real_execution",confirm:"ENABLE_SUPERVISED_REAL_EXECUTION"});
-    if(r.ok){
-      toast("Mode: supervised_real_execution — Arabic NL ready","⚙","ok");
-      refreshExecSum();refreshJarvis();
-    }else{
-      toast("Mode switch failed: "+(r.error||"unknown"),"⚙","er");
-    }
-  }catch(e){toast("Mode switch error","⚙","er");console.error(e);}
-}
-async function enableControlledRealExecution(){
-  try{
-    const r=await post("/jarvis/mobile/api/runtime/execution-mode",{mode:"controlled_real_execution",confirm:"ENABLE_CONTROLLED_REAL_EXECUTION"});
-    if(r.ok){
-      toast("Mode: controlled_real_execution","⚙","ok");
-      refreshExecSum();refreshJarvis();
-    }else{
-      toast("Mode switch failed: "+(r.error||"unknown"),"⚙","er");
-    }
-  }catch(e){toast("Mode switch error","⚙","er");console.error(e);}
-}
-async function returnToSimulation(){
-  try{
-    const r=await post("/jarvis/mobile/api/runtime/execution-mode",{mode:"simulation_only"});
-    if(r.ok){
-      toast("Mode: simulation_only","⚙","ok");
-      refreshExecSum();refreshJarvis();
-    }else{
-      toast("Mode switch failed: "+(r.error||"unknown"),"⚙","er");
-    }
-  }catch(e){toast("Mode switch error","⚙","er");console.error(e);}
-}
-async function loadPatchStatus(){
-  try{
-    const r=await fetch("/jarvis/mobile/api/runtime/patch/status");
-    const d=await r.json();
-    const el=$d("hudPatchStatus");
-    if(!el)return;
-    const pre=d?.preview||{};
-    const appr=d?.approval||{};
-    if(appr?.approved){
-      el.textContent="approved @"+(appr.timestamp||"").slice(11,19)||"yes";
-      el.style.color="#00ff88";
-    }else if(pre?.patch_available){
-      el.textContent="preview ready ("+(pre.files_proposed?.length||0)+" files)";
-      el.style.color="#ffaa00";
-    }else{
-      el.textContent="none";
-      el.style.color="rgba(0,240,255,.3)";
-    }
-  }catch(e){console.error("patch status error",e);}
-}
-async function approvePatch(){
-  const r=await post("/jarvis/mobile/api/runtime/patch/approve",{});
-  if(r.ok||r.status==="completed"||r.status==="warnings"){
-    toast("Patch approved"+(r.applied?.length?" ("+r.applied.length+" files)":""),"✓","ok");
-  }else{
-    toast("Patch approve failed: "+(r.error||"unknown"),"✕","er");
-  }
-  loadPatchStatus();
-}
-async function rejectPatch(){
-  const r=await post("/jarvis/mobile/api/runtime/patch/reject",{});
-  if(r.ok||r.status==="rejected"){
-    toast("Patch rejected","✕","wa");
-  }else{
-    toast("Patch reject failed","✕","er");
-  }
-  loadPatchStatus();
-}
-// Auto-refresh mode display in exec-summary
-// Override refreshExecSum to include mode
-const __origRefreshExecSum=refreshExecSum;
-refreshExecSum=async function(){
-  try{
-    await __origRefreshExecSum.call(this);
-    const r2=await fetch("/jarvis/mobile/api/runtime/execution-mode");
-    const d2=await r2.json();
-    const el=$d("hudCurrentMode");
-    if(!el)return;
-    const mode=d2.mode||"simulation_only";
-    el.textContent=mode;
-    if(mode==="supervised_real_execution"){el.style.color="#00ff88";el.style.textShadow="0 0 6px #00ff88";}
-    else if(mode==="controlled_real_execution"){el.style.color="#00f0ff";el.style.textShadow="0 0 6px #00f0ff";}
-    else{el.style.color="#ffaa00";el.style.textShadow="none";}
-  }catch(e){/* mode display non-critical */}
-  loadPatchStatus();
-};
-
-// ===== CLOCK =====
-function tickClk(){const c=$d("hudClock");if(c)c.textContent=new Date().toTimeString().split(" ")[0];}
-
-// ===== DOM READY =====
-document.addEventListener("DOMContentLoaded",function(){
-  tickClk();setInterval(tickClk,1000);
-  refreshJarvis();refreshExecSum();refreshActivity();loadInsightSnapshot();
-  setInterval(()=>{refreshJarvis();refreshExecSum();refreshActivity();loadInsightSnapshot();},7000);
-  // Snapshots
-  loadCorrelation();loadInsights();loadERP();loadSupervision();loadDrift();loadTrends();loadRecs();loadHotspots();loadPriorities();loadDeps();
-  setInterval(loadCorrelation,5000);setInterval(loadInsights,5000);setInterval(loadERP,10000);
-  setInterval(loadSupervision,10000);setInterval(loadDrift,10000);setInterval(loadTrends,10000);
-  setInterval(loadRecs,10000);setInterval(loadHotspots,10000);setInterval(loadPriorities,10000);setInterval(loadDeps,10000);
-  // Debug refresh every 15s when open
-  setInterval(()=>{if(dbgOpen)refreshDebug();},15000);
-  // RT debug overlay refresh
-  setInterval(()=>{
-    const rt=$d("rtDebugOverlay");
-    if(rt&&rt.style.display==="block")refreshRtDebugOverlay();
-  },5000);
-  // Mode + patch refresh
-  setInterval(loadPatchStatus,10000);
-  // OpenCode initialization
-  setTimeout(refreshOpenCodeStatus,2000);
-  setInterval(refreshOpenCodeStatus,30000);
-  setInterval(loadOpenCodeTasks,15000);
-});
-
-// ===== OPENCODE AGENT FUNCTIONS =====
-async function refreshOpenCodeStatus(){
-  try{
-    const r=await fetch("/jarvis/api/agents/opencode/status");
-    const d=await r.json();
-    const det=d.detection||{};
-    const badge=$d("ocBadge");
-    const pathEl=$d("ocPath");
-    const verEl=$d("ocVersion");
-    const enEl=$d("ocEnabled");
-    const stEl=$d("ocStatus");
-    if(det.installed){
-      badge.textContent="ONLINE";
-      badge.style.background="#004a2a";
-      badge.style.color="#00ff88";
-    }else{
-      badge.textContent="OFFLINE";
-      badge.style.background="#4a1a1a";
-      badge.style.color="#ff4444";
-    }
-    if(pathEl)pathEl.textContent=det.executable_path||"—";
-    if(verEl)verEl.textContent=det.version||"—";
-    if(enEl)enEl.checked=d.enabled;
-    if(stEl)stEl.textContent="Status: "+(d.enabled?"Enabled":"Disabled")+" | Tasks: "+d.tasks_count;
-    if(d.last_task&&d.last_result){
-      const lr=d.last_result;
-      showOpenCodeOutput(lr);
-    }
-  }catch(e){
-    const badge=$d("ocBadge");
-    if(badge){badge.textContent="ERROR";badge.style.background="#4a1a1a";badge.style.color="#ff4444";}
-  }
-}
-async function runOpenCode(){
-  const inp=$d("ocTaskInput");
-  const modeEl=$d("ocMode");
-  const btn=$d("ocRunBtn");
-  const task=inp?inp.value.trim():"";
-  const mode=modeEl?modeEl.value:"supervised_apply";
-  if(!task){toast("Enter a task first","OC","wa");return;}
-  btn.disabled=true;
-  btn.textContent="Running...";
-  const stEl=$d("ocStatus");
-  if(stEl)stEl.textContent="Running OpenCode agent...";
-  try{
-    const r=await fetch("/jarvis/api/agents/opencode/run",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({task:task,mode:mode}),
+    // Count by status group
+    const counts={queued:0,parsed:0,waiting_approval:0,running:0,completed:0,failed:0};
+    tasks.forEach(t=>{
+      const s=(t.status||'').toLowerCase();
+      if(s==='received')counts.queued++;
+      else if(s==='routed')counts.parsed++;
+      else if(s==='waiting_approval'||s==='approved')counts.waiting_approval++;
+      else if(s==='running')counts.running++;
+      else if(s==='completed'||s==='applied')counts.completed++;
+      else if(s==='failed'||s==='rejected'||s==='rolled_back')counts.failed++;
+      else if(s==='received')counts.queued++;
     });
-    const result=await r.json();
-    showOpenCodeOutput(result);
-    loadOpenCodeTasks();
-    toast("OpenCode task completed","OC",result.final_status==="completed"?"ok":"er");
-    if(stEl)stEl.textContent="Task "+(result.task_id||"").slice(0,8)+" | Status: "+result.final_status;
-  }catch(e){
-    if(stEl)stEl.textContent="Error: "+e.message;
-    toast("OpenCode error: "+e.message,"OC","er");
-  }finally{
-    btn.disabled=false;
-    btn.textContent="Run";
+
+    $('countQueued').textContent=counts.queued;
+    $('countParsed').textContent=counts.parsed;
+    $('countApproval').textContent=counts.waiting_approval;
+    $('countRunning').textContent=counts.running;
+    $('countCompleted').textContent=counts.completed;
+    $('countFailed').textContent=counts.failed;
+    $('totalTasks').textContent=total+' task'+(total!==1?'s':'');
+
+    // Highlight active step in timeline
+    const steps=$('taskTimeline').querySelectorAll('.timeline-step');
+    steps.forEach(s=>{s.classList.remove('active','completed','failed')});
+    if(counts.running>0) document.querySelector('[data-step="running"]').classList.add('active');
+    else if(counts.waiting_approval>0) document.querySelector('[data-step="waiting_approval"]').classList.add('active');
+    else if(counts.parsed>0) document.querySelector('[data-step="parsed"]').classList.add('active');
+    else if(counts.queued>0) document.querySelector('[data-step="queued"]').classList.add('active');
+    if(counts.completed>0) document.querySelector('[data-step="completed"]').classList.add('completed');
+    if(counts.failed>0) document.querySelector('[data-step="failed"]').classList.add('failed');
+
+    // Render recent tasks
+    renderTasks(tasks);
   }
-}
-function showOpenCodeOutput(result){
-  if(!result)return;
-  const area=$d("ocOutputArea");
-  area.style.display="block";
-  const stdoutEl=$d("ocStdout");
-  const stderrEl=$d("ocStderr");
-  const valEl=$d("ocValidation");
-  const filesEl=$d("ocFilesChanged");
-  const statusEl=$d("ocTaskStatus");
-  if(stdoutEl)stdoutEl.textContent=result.stdout_summary||"(no output)";
-  if(stderrEl)stderrEl.textContent=result.stderr_summary||"(no errors)";
-  if(valEl){
-    const v=result.validation||{};
-    valEl.textContent="Status: "+v.status+" | Steps: "+(v.steps||[]).length+" | "+v.stdout;
+
+  function renderTasks(tasks){
+    const el=$('taskList');
+    if(!tasks||tasks.length===0){el.innerHTML='<div class="empty-state">No tasks yet</div>';return}
+    el.innerHTML=tasks.slice(0,20).map(t=>{
+      const s=(t.status||'received').toLowerCase();
+      let sc='pending';
+      if(s==='running')sc='running';
+      else if(s==='completed'||s==='applied')sc='completed';
+      else if(s==='failed'||s==='rejected'||s==='rolled_back')sc='failed';
+      else if(s==='waiting_approval'||s==='approved')sc='approval';
+      const cls='task-item status-'+s;
+      const text=(t.raw_text||t.normalized_text||t.task||'No description').substring(0,80);
+      const time=t.updated_at||t.created_at||'';
+      const shortTime=time ? new Date(time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
+      return '<div class="'+cls+'">'
+        +'<div class="task-text">'+escHtml(text)+'</div>'
+        +'<div class="task-meta"><span>'+escHtml(t.route||'')+'</span><span class="task-status '+sc+'">'+s+'</span></div>'
+        +'<div class="task-meta"><span>'+shortTime+'</span><span>'+(t.selected_agent||'')+'</span></div>'
+        +'</div>';
+    }).join('');
   }
-  if(filesEl)filesEl.textContent=(result.files_changed||[]).join(", ")||"(none)";
-  if(statusEl)statusEl.textContent=result.final_status||"unknown";
-}
-async function loadOpenCodeTasks(){
-  try{
-    const r=await fetch("/jarvis/api/agents/opencode/tasks?limit=10");
-    const tasks=await r.json();
-    const listEl=$d("ocTasksList");
-    if(!listEl)return;
-    if(!tasks||!tasks.length){
-      listEl.innerHTML='<div style="color:rgba(0,240,255,.2);">No tasks yet.</div>';
-      return;
+
+  function escHtml(s){
+    const d=document.createElement('div');d.textContent=s;return d.innerHTML;
+  }
+
+  // Send command
+  async function sendCommand(){
+    const input=$('commandInput');
+    const cmd=input.value.trim();
+    if(!cmd){show('Please enter a command','error');return}
+    $('sendBtn').disabled=true;$('sendBtn').textContent='...';
+    const result=await apiPost(APIS.execute,{command:cmd,task:cmd});
+    $('sendBtn').disabled=false;$('sendBtn').textContent='Send';
+    if(result){
+      show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
+      input.value='';
+      updateTasks();
+    }else{
+      show('Command failed','error');
     }
-    listEl.innerHTML=tasks.map(t=>{
-      const sid=(t.task_id||"").slice(0,8);
-      const st=t.final_status||"unknown";
-      const fc=(t.files_changed||[]).join(",")||"—";
-      return '<div style="display:flex;gap:4px;padding:1px 0;border-bottom:1px solid rgba(0,240,255,.05);">'+
-        '<span style="color:rgba(0,240,255,.5);min-width:60px;">'+sid+'</span>'+
-        '<span style="color:'+(st==="completed"?"#00ff88":"#ff4444")+';min-width:60px;">'+st+'</span>'+
-        '<span style="color:rgba(0,240,255,.3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+
-        String(t.task||"").slice(0,40)+
-        '</span></div>';
-    }).join("");
-  }catch(e){/* non-critical */}
-}
-async function toggleOpenCode(){
-  // just refreshes status; UI toggle state is read-only indicator
-  await refreshOpenCodeStatus();
-}
+  }
+
+  // Create Task (same as send)
+  async function createTask(){
+    const input=$('commandInput');
+    const cmd=input.value.trim();
+    if(!cmd){show('Enter a command first','error');return}
+    $('createTaskBtn').disabled=true;$('createTaskBtn').textContent='...';
+    const result=await apiPost(APIS.execute,{command:cmd,task:cmd});
+    $('createTaskBtn').disabled=false;$('createTaskBtn').textContent='Create Task';
+    if(result){
+      show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
+      input.value='';
+      updateTasks();
+    }else{
+      show('Failed to create task','error');
+    }
+  }
+
+  // Approve & Run
+  async function approveRun(){
+    $('approveRunBtn').disabled=true;$('approveRunBtn').textContent='...';
+    const [appResult,runResult]=await Promise.all([
+      apiPost(APIS.approve,{}),apiPost(APIS.run,{request_id:'mobile'})
+    ]);
+    $('approveRunBtn').disabled=false;$('approveRunBtn').textContent='Approve & Run';
+    if(appResult&&runResult){
+      show('Approved and triggered','success');
+      updateTasks();
+    }else{
+      show('Approve/Run failed','error');
+    }
+  }
+
+  // Refresh all
+  function refreshAll(){
+    Promise.all([updateStatus(),updateTasks()]);
+  }
+
+  // Bind events
+  $('sendBtn').addEventListener('click',sendCommand);
+  $('commandInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendCommand()});
+  $('createTaskBtn').addEventListener('click',createTask);
+  $('approveRunBtn').addEventListener('click',approveRun);
+  $('refreshBtn').addEventListener('click',refreshAll);
+
+  // Tasks toggle
+  let tasksVisible=true;
+  $('tasksToggle').addEventListener('click',function(){
+    tasksVisible=!tasksVisible;
+    $('taskList').style.display=tasksVisible?'':'none';
+    this.textContent=tasksVisible?'hide':'show';
+  });
+
+  // Initial load
+  refreshAll();
+
+  // Poll every 10s
+  setInterval(refreshAll,10000);
+})();
 </script>
 </body>
 </html>

@@ -11,13 +11,24 @@ def jarvis_mobile():
     try:
         from jarvis_app.services.runtime_status_service import RuntimeStatusService
         from jarvis_app.services.agent_orchestrator import AgentOrchestrator
+        from jarvis_app.services.voice_service import VoiceService
+        from jarvis_app.services.task_state_service import TaskStateService
         orch = AgentOrchestrator(RUNTIME_LOGS_DIR)
+        voice = VoiceService()
+        runtime = RuntimeStatusService()
+        tasks = TaskStateService(RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR)
         data = {
             "status": "online",
-            "mode": "active",
-            "voice": "enabled",
-            "runtime": "ready",
-            "agents": [a.get("name", a.get("agent_id", "Agent")) for a in orch.list_agents()],
+            "mode": runtime.status().get("mode", "active"),
+            "voice": voice.status(),
+            "runtime": runtime.status(),
+            "agents": orch.list_agents(),
+            "tasks": tasks.list_all(20),
+            "active_tasks": tasks.list_active(),
+            "task_counts": {
+                "active": len(tasks.list_active()),
+                "total": len(tasks.list_all(999)),
+            },
             "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         return render_template("jarvis/mobile_control_center.html", data=data)
