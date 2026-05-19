@@ -14,6 +14,44 @@ from jarvis_app.services.validation_service import ValidationService
 from jarvis_app.services.engineering_service import EngineeringService
 from jarvis_app.utils.safety import BLOCKED_DIR_NAMES, BLOCKED_FILE_SUFFIXES
 
+BLOCKED_SLUGS = frozenset({
+    "and", "with", "inside", "parser", "the", "a", "an", "page", "route",
+    "create", "fix", "build", "add", "new", "for", "at", "to", "of", "in",
+    "on", "by", "is", "are", "was", "were", "be", "been", "being", "have",
+    "has", "had", "do", "does", "did", "will", "would", "could", "should",
+    "may", "might", "shall", "can", "need", "dare", "ought", "used", "this",
+    "that", "these", "those", "it", "its", "they", "them", "their", "we",
+    "our", "you", "your", "he", "she", "his", "her", "feature", "api",
+    "endpoint", "template", "file", "module", "class", "function", "method",
+    "variable", "value", "key", "name", "type", "list", "dict", "set",
+    "tuple", "str", "int", "bool", "none", "true", "false",
+    "routing", "router", "routed",
+})
+
+KNOWN_INTENT_PATTERNS = {
+    "about": "about",
+    "system logs": "system-logs",
+    "system log": "system-logs",
+    "diagnostics dashboard": "diagnostics",
+    "diagnostic dashboard": "diagnostics",
+    "voice assistant": "voice-assistant",
+    "control center": "mobile",
+    "mobile control": "mobile",
+    "system status": "system-status",
+    "health check": "health",
+    "help page": "help",
+    "documentation": "docs",
+    "api docs": "api-docs",
+    "api reference": "api-reference",
+    "user guide": "guide",
+    "getting started": "getting-started",
+    "quick start": "quick-start",
+    "tutorial": "tutorial",
+    "faq": "faq",
+    "contact": "contact",
+    "support": "support",
+}
+
 
 class EngineeringExecutionService:
     def __init__(self, logs_dir=None):
@@ -31,8 +69,7 @@ class EngineeringExecutionService:
     def detect_action(self, text):
         lowered = text.lower().strip()
 
-        # Diagnostics
-        if any(w in lowered for w in ("diagnostics", "diagnostic", "health page", "system status page")):
+        if any(w in lowered for w in ("diagnostics", "diagnostic")):
             return "generate_diagnostics"
 
         # Create page / create feature
@@ -101,8 +138,14 @@ class EngineeringExecutionService:
         handler_name = f"_plan_{action}"
         handler = getattr(self, handler_name, None)
         if handler:
-            return handler(text)
-        return self._plan_generic(action, text)
+            plan = handler(text)
+        else:
+            plan = self._plan_generic(action, text)
+        match = self.command_match_score(text, plan)
+        plan["match_score"] = match["score"]
+        plan["verification_status"] = match["verification"]
+        plan["mismatch_reason"] = match["mismatch_reason"]
+        return plan
 
     def _plan_generic(self, action, text):
         return {
@@ -136,6 +179,8 @@ def {func_name}_page():
         return {
             "action": "create_page",
             "plan_summary": f"Create a new page at {route_path} with template {template_file}",
+            "page_name": page_name,
+            "route_path": route_path,
             "target_files": [
                 {"path": route_file, "operation": "modify", "purpose": f"Add route {route_path}"},
                 {"path": template_file, "operation": "create", "purpose": f"HTML template for {page_name}"},
@@ -186,6 +231,8 @@ def {handler_name}():
         return {
             "action": "add_route",
             "plan_summary": f"Add new route {route_path} in {route_file} with template {template_file}",
+            "page_name": route_name,
+            "route_path": route_path,
             "target_files": [
                 {"path": route_file, "operation": "modify", "purpose": "Add route definition"},
                 {"path": template_file, "operation": "create", "purpose": "HTML template for new route"},
@@ -560,35 +607,121 @@ document.getElementById('timestamp').textContent = 'Generated: ' + new Date().to
     # Name extraction helpers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _parse_structured_syntax(text):
+        result = {}
+        for prefix in ("ROUTE", "TEMPLATE", "TITLE"):
+            m = re.search(rf'{prefix}\s*=\s*["\']?([^"\'\s]+)["\']?', text, re.IGNORECASE)
+            if m:
+                result[prefix.lower()] = m.group(1).strip("/")
+        return result
+
+    @staticmethod
+    def _resolve_known_intent(text):
+        lowered = text.lower()
+        for phrase, slug in KNOWN_INTENT_PATTERNS.items():
+            if phrase in lowered:
+                return slug
+        return None
+
+    @staticmethod
+    def _is_blocked_slug(slug):
+        return slug.lower() in BLOCKED_SLUGS
+
     def _extract_page_name(self, text):
-        for prefix in ("diagnostics", "diagnostic"):
-            if prefix in text.lower():
-                return "diagnostics"
-        m = re.search(r'(?:page|called|named|route)\s+["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
+        syn = self._parse_structured_syntax(text)
+        if syn.get("route"):
+            slug = syn["route"].rstrip("/").split("/")[-1]
+            if not self._is_blocked_slug(slug):
+                return slug
+        if syn.get("template"):
+            slug = syn["template"].replace(".html", "").split("/")[-1]
+            if not self._is_blocked_slug(slug):
+                return slug
+        if syn.get("title"):
+            return syn["title"].lower().replace(" ", "-")
+
+        known = self._resolve_known_intent(text)
+        if known:
+            return known
+
+        m = re.search(r'(?:page|called|named)\s+["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
         if m:
-            return m.group(1).strip("/").replace("/", "_")
-        m = re.search(r'(?:create|build|make|new)\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z0-9_]*)', text, re.IGNORECASE)
+            slug = m.group(1).strip("/").lower()
+            if not self._is_blocked_slug(slug):
+                return slug
+
+        m = re.search(r'(?:create|build|make)\s+(?:a\s+|an\s+|the\s+)?(?:\w+\s+)?(\w+)\s+(?:page|screen|view|section)', text, re.IGNORECASE)
         if m:
-            return m.group(1)
+            slug = m.group(1).lower()
+            if not self._is_blocked_slug(slug) and len(slug) > 2:
+                return slug
+
+        words = [w.lower().strip(".,;:'\"!?") for w in text.split()
+                 if not self._is_blocked_slug(w.strip(".,;:'\"!?")) and len(w.strip(".,;:'\"!?")) > 2]
+        if words:
+            return words[-1]
+
         return "new_page"
 
     def _extract_route_name(self, text):
-        m = re.search(r'(?:at|to|route|path|endpoint)\s+["\']?(/[a-zA-Z0-9_/-]+)["\']?', text, re.IGNORECASE)
+        syn = self._parse_structured_syntax(text)
+        if syn.get("route"):
+            return syn["route"].lstrip("/")
+        if syn.get("template"):
+            return syn["template"].replace(".html", "")
+
+        known = self._resolve_known_intent(text)
+        if known:
+            return known
+
+        m = re.search(r'(?:at|route|path)\s+["\']?(/[a-zA-Z0-9_/-]+)["\']?', text, re.IGNORECASE)
         if m:
-            name = m.group(1).strip("/").replace("/", "_")
-            return name if name else "new_route"
-        m = re.search(r'(?:add|create|new)\s+(?:a\s+)?(?:route\s+)?(?:for\s+)?["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
+            name = m.group(1).strip("/")
+            if name and not self._is_blocked_slug(name.replace("/", "_")):
+                return name
+
+        m = re.search(r'(?:add|create|new)\s+(?:a\s+)?route\s+(?:for\s+|to\s+|at\s+)?["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
         if m:
-            return m.group(1).strip("/").replace("/", "_")
+            name = m.group(1).strip("/")
+            if not self._is_blocked_slug(name.replace("/", "_")):
+                return name
+
+        words = [w.lower().strip(".,;:'\"!?") for w in text.split()
+                 if not self._is_blocked_slug(w.strip(".,;:'\"!?")) and len(w.strip(".,;:'\"!?")) > 2]
+        if words:
+            return words[-1]
+
         return "new_route"
 
     def _extract_endpoint_name(self, text):
-        m = re.search(r'(?:at|to|endpoint|path)\s+["\']?(/[a-zA-Z0-9_/-]+)["\']?', text, re.IGNORECASE)
+        syn = self._parse_structured_syntax(text)
+        if syn.get("route"):
+            return syn["route"].lstrip("/")
+        if syn.get("template"):
+            return syn["template"].replace(".html", "")
+
+        known = self._resolve_known_intent(text)
+        if known:
+            return known
+
+        m = re.search(r'(?:at|endpoint|path)\s+["\']?(/[a-zA-Z0-9_/-]+)["\']?', text, re.IGNORECASE)
         if m:
-            return m.group(1).lstrip("/")
-        m = re.search(r'(?:add|create|new)\s+(?:a\s+)?(?:api\s+)?(?:endpoint\s+)?["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
+            name = m.group(1).lstrip("/")
+            if name and not self._is_blocked_slug(name.replace("/", "_")):
+                return name
+
+        m = re.search(r'(?:add|create|new)\s+(?:a\s+)?(?:api\s+)?endpoint\s+(?:for\s+|at\s+)?["\']?([a-zA-Z][a-zA-Z0-9_/-]*)["\']?', text, re.IGNORECASE)
         if m:
-            return m.group(1).lstrip("/")
+            name = m.group(1).lstrip("/")
+            if not self._is_blocked_slug(name.replace("/", "_")):
+                return name
+
+        words = [w.lower().strip(".,;:'\"!?") for w in text.split()
+                 if not self._is_blocked_slug(w.strip(".,;:'\"!?")) and len(w.strip(".,;:'\"!?")) > 2]
+        if words:
+            return words[-1]
+
         return "new_endpoint"
 
     def _extract_template_name(self, text):
@@ -610,6 +743,52 @@ document.getElementById('timestamp').textContent = 'Generated: ' + new Date().to
         if m:
             return m.group(1)
         return "routes/engineering_routes.py"
+
+    def command_match_score(self, command_text, plan):
+        lowered = command_text.lower()
+        checks = []
+
+        slug = None
+        route_path = plan.get("route_path", "")
+        if route_path:
+            slug = route_path.rstrip("/").split("/")[-1]
+        page_name = plan.get("page_name", "")
+        if not slug and page_name:
+            slug = page_name
+
+        if slug:
+            slug_normalized = slug.lower().replace("-", " ").replace("_", " ")
+            slug_in_text = slug_normalized in lowered or slug.lower() in lowered
+            if slug_in_text:
+                checks.append(("route_slug_found", 1.0, ""))
+            else:
+                checks.append(("route_slug_missing", 0.0, f"Route '{slug}' not in command"))
+
+        final_urls = plan.get("final_urls", [])
+        if final_urls:
+            url_match = any(
+                u.lower() in lowered or u.split("/")[-1].lower().replace("-", " ") in lowered
+                for u in final_urls
+            )
+            checks.append(("url_match", 1.0 if url_match else 0.0, "" if url_match else f"No URL in command"))
+
+        plan_summary = plan.get("plan_summary", "").lower()
+        summary_words = set(plan_summary.split()) - {"a", "an", "the", "at", "to", "for", "in", "of", "with"}
+        word_overlap = sum(1 for w in summary_words if w in lowered) / max(len(summary_words), 1)
+        checks.append(("word_overlap", word_overlap, ""))
+
+        if not checks:
+            checks.append(("default", 0.5, ""))
+
+        score = sum(c[1] for c in checks) / len(checks)
+        reasons = [c[2] for c in checks if c[2]]
+        verification = "matched" if score >= 0.4 else "mismatch"
+
+        return {
+            "score": round(score, 2),
+            "verification": verification,
+            "mismatch_reason": "; ".join(reasons),
+        }
 
     @staticmethod
     def _make_preview(filename, old, new):

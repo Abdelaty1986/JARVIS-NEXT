@@ -375,7 +375,34 @@ body{
         </div>
       </div>
     </div>
-    <div id="voiceDetails" style="font-size:12px;color:var(--text-secondary)"></div>
+    <div id="voiceDetails" style="font-size:12px;color:var(--text-secondary);margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-outline btn-sm" id="micBtn" style="font-size:18px;padding:8px 12px;min-width:44px" title="Push to talk">🎤</button>
+      <div style="flex:1;font-size:11px;color:var(--text-muted)" id="transcriptLabel">Press mic to speak</div>
+    </div>
+    <div id="transcriptPanel" style="margin-top:8px;display:none">
+      <div class="exec-result-value" id="transcriptText" style="max-height:80px;font-size:12px"></div>
+    </div>
+  </div>
+
+  <!-- Parser Verification -->
+  <div class="card" id="verificationCard" style="display:none">
+    <div class="card-header">
+      <span class="card-title">Parser Verification</span>
+    </div>
+    <div id="verificationResults">
+      <div class="empty-state">No verification data</div>
+    </div>
+  </div>
+
+  <!-- OpenCode Health -->
+  <div class="card" id="opencodeCard" style="display:none">
+    <div class="card-header">
+      <span class="card-title">OpenCode Health</span>
+    </div>
+    <div id="opencodeResults">
+      <div class="empty-state">Checking...</div>
+    </div>
   </div>
 
   <!-- Execution Results -->
@@ -447,6 +474,8 @@ body{
     engApply: '/jarvis/api/engineering/apply',
     engStatus: '/jarvis/api/engineering/status',
     engHistory: '/jarvis/api/engineering/history',
+    engDryRun: '/jarvis/api/engineering/dry-run',
+    opencodeHealth: '/jarvis/api/opencode/health',
   };
 
   // Button diagnostics tracker
@@ -674,6 +703,142 @@ body{
     el.innerHTML = html;
   }
 
+  // Render parser verification
+  function renderVerification(plan) {
+    const el = $('verificationResults');
+    if (!plan) { $('verificationCard').style.display = 'none'; return; }
+    const v = plan.verification_status || 'unknown';
+    const score = plan.match_score !== undefined ? plan.match_score : 1.0;
+    const reason = plan.mismatch_reason || '';
+    const action = plan.action || '';
+    const summary = plan.plan_summary || '';
+    const pageName = plan.page_name || '';
+    const routePath = plan.route_path || '';
+    $('verificationCard').style.display = '';
+    let html = '<div class="exec-result">';
+    html += '<span class="exec-result-label">Status:</span> <span class="'+(v==='matched'?'exec-ok':'exec-fail')+'">'+v+'</span>';
+    html += ' <span class="exec-result-value inline">score: '+score+'</span>';
+    html += '</div>';
+    if (action) html += '<div class="exec-result"><span class="exec-result-label">Action:</span> <span class="exec-result-value inline">'+escHtml(action)+'</span></div>';
+    if (summary) html += '<div class="exec-result"><span class="exec-result-label">Plan:</span> <div class="exec-result-value">'+escHtml(summary)+'</div></div>';
+    if (pageName) html += '<div class="exec-result"><span class="exec-result-label">Page:</span> <span class="exec-result-value inline">'+escHtml(pageName)+'</span></div>';
+    if (routePath) html += '<div class="exec-result"><span class="exec-result-label">Route:</span> <span class="exec-result-value inline">'+escHtml(routePath)+'</span></div>';
+    if (reason) html += '<div class="exec-result"><span class="exec-result-label">Mismatch:</span> <span class="exec-fail">'+escHtml(reason)+'</span></div>';
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  // Check OpenCode health
+  async function checkOpenCodeHealth() {
+    const result = await apiGet(APIS.opencodeHealth);
+    const el = $('opencodeResults');
+    if (!result) {
+      $('opencodeCard').style.display = 'none';
+      return;
+    }
+    $('opencodeCard').style.display = '';
+    const avail = result.available;
+    const usable = result.usable;
+    const version = result.version || 'N/A';
+    const fallback = result.fallback || 'internal_engineering';
+    let html = '<div class="exec-result">';
+    html += '<span class="exec-result-label">CLI:</span> <span class="'+(avail?'exec-ok':'exec-fail')+'">'+(avail?'Found':'Not found')+'</span>';
+    html += ' <span class="exec-result-value inline">'+escHtml(result.cli_path)+'</span></div>';
+    html += '<div class="exec-result"><span class="exec-result-label">Usable:</span> <span class="'+(usable?'exec-ok':'exec-fail')+'">'+(usable?'Yes':'No')+'</span></div>';
+    html += '<div class="exec-result"><span class="exec-result-label">Version:</span> <span class="exec-result-value inline">'+escHtml(version)+'</span></div>';
+    html += '<div class="exec-result"><span class="exec-result-label">Fallback:</span> <span class="exec-result-value inline">'+escHtml(fallback)+'</span></div>';
+    el.innerHTML = html;
+  }
+
+  // Voice / Web Speech
+  let recognition = null;
+  let isListening = false;
+
+  function initSpeech() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      $('voiceLabel').textContent = 'unsupported';
+      $('micBtn').disabled = true;
+      $('micBtn').style.opacity = '0.3';
+      return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function() {
+      isListening = true;
+      $('voiceLabel').textContent = 'listening...';
+      $('micBtn').style.background = 'var(--accent-red)';
+      $('micBtn').style.color = '#fff';
+      $('micBtn').textContent = '🔴';
+      $('voiceWave').style.display = 'flex';
+      $('transcriptPanel').style.display = '';
+      $('transcriptText').textContent = '';
+    };
+
+    recognition.onend = function() {
+      isListening = false;
+      $('voiceLabel').textContent = 'idle';
+      $('micBtn').style.background = '';
+      $('micBtn').style.color = '';
+      $('micBtn').textContent = '🎤';
+      $('voiceWave').style.display = 'none';
+    };
+
+    recognition.onresult = function(event) {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          $('transcriptText').textContent = transcript;
+          handleVoiceCommand(transcript);
+          recognition.stop();
+          return;
+        }
+      }
+      $('transcriptText').textContent = transcript + '...';
+    };
+
+    recognition.onerror = function(event) {
+      $('voiceLabel').textContent = 'error: ' + event.error;
+      $('micBtn').style.background = '';
+      $('micBtn').textContent = '🎤';
+      $('voiceWave').style.display = 'none';
+      isListening = false;
+    };
+
+    $('voiceLabel').textContent = 'ready';
+  }
+
+  function toggleMic() {
+    if (!recognition) { show('Speech not supported','error'); return; }
+    if (isListening) {
+      recognition.stop();
+    } else {
+      try { recognition.start(); } catch(e) { show('Mic error: '+e.message,'error'); }
+    }
+  }
+
+  async function handleVoiceCommand(text) {
+    show('Voice: "'+text+'"','info');
+    $('commandInput').value = text;
+    // Auto-send if it looks like a command
+    if (/create|build|add|fix|improve|modify|route|page|diagnostics/i.test(text)) {
+      await sendCommand();
+    }
+  }
+
+  // Init speech on first user interaction
+  document.addEventListener('click', function initSpeechOnce() {
+    if (!recognition) initSpeech();
+    document.removeEventListener('click', initSpeechOnce);
+  }, { once: true });
+
+  $('micBtn').addEventListener('click', toggleMic);
+
   // Send command (routes to engineering or execution based on command)
   async function sendCommand(){
     const input=$('commandInput');
@@ -687,6 +852,7 @@ body{
     trackButton('Send', url, result, result ? '' : 'no response');
     if(result&&result.ok){
       show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
+      if (result.plan) renderVerification(result.plan);
       input.value='';
       updateTasks();
     }else{
@@ -707,6 +873,7 @@ body{
     trackButton('Create Task', url, result, result ? '' : 'no response');
     if(result&&result.ok){
       show('Task created: '+(result.task_id||'').substring(0,8)+'...','success');
+      if (result.plan) renderVerification(result.plan);
       input.value='';
       updateTasks();
     }else{
@@ -751,7 +918,7 @@ body{
 
   // Refresh all
   function refreshAll(){
-    Promise.all([updateStatus(),updateTasks()]);
+    Promise.all([updateStatus(),updateTasks(),checkOpenCodeHealth()]);
   }
 
   // Bind events

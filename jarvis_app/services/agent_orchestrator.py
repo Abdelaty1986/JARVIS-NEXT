@@ -78,14 +78,25 @@ class AgentOrchestrator:
 
     def _check_opencode(self):
         import os, subprocess
-        opc = "/usr/local/bin/opencode"
+        try:
+            opc = os.environ.get("OPCODE_CLI", "/usr/local/bin/opencode")
+        except Exception:
+            opc = "/usr/local/bin/opencode"
         if os.path.isfile(opc) and os.access(opc, os.X_OK):
             try:
                 r = subprocess.run([opc, "--version"], capture_output=True, text=True, timeout=10)
-                version = (r.stdout or r.stderr or "").strip()[:20]
-                self._agents["opencode_engineering"]["status"] = "available"
+                version = (r.stdout or r.stderr or "").strip()[:50]
+                # Try a status command to verify it's truly usable
+                usable = False
+                try:
+                    s = subprocess.run([opc, "--status"], capture_output=True, text=True, timeout=10)
+                    usable = s.returncode == 0
+                except Exception:
+                    usable = bool(version)
+                self._agents["opencode_engineering"]["status"] = "available" if usable else "unavailable"
                 self._agents["opencode_engineering"]["version"] = version
                 self._agents["opencode_engineering"]["executable_path"] = opc
+                self._agents["opencode_engineering"]["error"] = "" if usable else "CLI found but not usable (no provider configured)"
             except Exception:
                 self._agents["opencode_engineering"]["status"] = "error"
                 self._agents["opencode_engineering"]["error"] = "Version check failed"

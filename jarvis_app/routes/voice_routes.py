@@ -33,3 +33,13 @@ def voice_stop():
 @voice_bp.route("/jarvis/api/voice/mute", methods=["POST"])
 def voice_mute():
     return jsonify(_voice.mute())
+
+
+@voice_bp.route("/jarvis/api/voice/speak", methods=["POST"])
+def voice_speak():
+    payload = request.json or {}
+    text = payload.get("text", "")
+    if not text:
+        return jsonify({"ok": False, "error": "No text provided"}), 400
+    result = _voice.respond(text)
+    return jsonify(result)

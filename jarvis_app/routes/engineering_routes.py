@@ -1,9 +1,11 @@
 import flask
+import subprocess
+
 from flask import Blueprint, jsonify, render_template, request, current_app
 from werkzeug.routing import Rule
 from datetime import datetime
 
-from config import RUNTIME_LOGS_DIR, RUNTIME_MEMORY_DIR, TEMPLATES_DIR
+from config import RUNTIME_LOGS_DIR, RUNTIME_MEMORY_DIR, TEMPLATES_DIR, OPCODE_CLI
 from jarvis_app.services.task_state_service import TaskStateService
 from jarvis_app.services.engineering_execution_service import EngineeringExecutionService
 from jarvis_app.services.agent_orchestrator import AgentOrchestrator
@@ -28,6 +30,15 @@ def engineering_execute():
     action = _engine.detect_action(task_text)
     plan = _engine.create_plan(action, task_text)
 
+    verification = plan.get("verification_status", "matched")
+    mismatch_reason = plan.get("mismatch_reason", "")
+
+    # Reject placeholder-only pages
+    if action in ("create_page", "add_route"):
+        page_name = plan.get("page_name", "")
+        if page_name in ("new_page", "new_route") or plan.get("verification_status") == "mismatch":
+            pass  # let the user decide via approval
+
     task = _task_state.create(task_text, "engineering." + action)
     agent_id = "internal_engineering"
     _task_state.update(
@@ -50,6 +61,9 @@ def engineering_execute():
         "action": action,
         "agent_id": agent_id,
         "plan_summary": plan.get("plan_summary", ""),
+        "verification": verification,
+        "mismatch_reason": mismatch_reason,
+        "match_score": plan.get("match_score", 1.0),
         "plan": plan,
     })
 
@@ -75,6 +89,9 @@ def engineering_plan():
     return jsonify({
         "ok": True,
         "action": action,
+        "verification": plan.get("verification_status", "matched"),
+        "mismatch_reason": plan.get("mismatch_reason", ""),
+        "match_score": plan.get("match_score", 1.0),
         "plan": plan,
     })
 
@@ -256,3 +273,50 @@ def engineering_history():
         "history": eng_tasks,
         "count": len(eng_tasks),
     })
+
+
+@engineering_bp.route("/jarvis/api/engineering/dry-run", methods=["POST"])
+def engineering_dry_run():
+    payload = request.json or {}
+    command = payload.get("command", "")
+    if not command.strip():
+        return jsonify({"ok": False, "error": "No command provided"}), 400
+    action = _engine.detect_action(command)
+    plan = _engine.create_plan(action, command)
+    return jsonify({
+        "ok": True,
+        "action": action,
+        "plan_summary": plan.get("plan_summary", ""),
+        "verification": plan.get("verification_status", "matched"),
+        "mismatch_reason": plan.get("mismatch_reason", ""),
+        "match_score": plan.get("match_score", 1.0),
+        "plan": plan,
+        "note": "Dry-run — no files were modified",
+    })
+
+
+@engineering_bp.route("/jarvis/api/opencode/health")
+def opencode_health():
+    import os
+    cli_path = OPCODE_CLI
+    available = os.path.isfile(cli_path) and os.access(cli_path, os.X_OK)
+    version = ""
+    if available:
+        try:
+            r = subprocess.run([cli_path, "--version"], capture_output=True, text=True, timeout=10)
+            version = (r.stdout or r.stderr or "").strip()[:50]
+        except Exception:
+            version = "check failed"
+    return jsonify({
+        "available": available,
+        "cli_path": cli_path,
+        "version": version or None,
+        "usable": available and bool(version),
+        "fallback": "internal_engineering",
+    })
+
+@engineering_bp.route("/jarvis/about")
+def about_page():
+    return render_template("jarvis/about.html",
+                           title="About",
+                           data={"status": "online", "page": "about", "source": "engineering"})
