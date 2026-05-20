@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings - JARVIS</title>
+<style>
+:root {
+  --bg: #0a0e14;
+  --bg-card: #111820;
+  --bg-card-alt: #182230;
+  --border: #1e2a3a;
+  --border-glow: #00d4ff;
+  --text: #e6edf3;
+  --text-muted: #6e7b8e;
+  --accent: #00d4ff;
+  --accent-dim: #0077a0;
+  --green: #00e676;
+  --red: #ff1744;
+  --orange: #ffa726;
+  --purple: #b388ff;
+  --radius: 12px;
+  --transition: 0.25s ease;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  min-height: 100vh;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 {
+  font-size: 26px;
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(0,212,255,0.3);
+  letter-spacing: 1px;
+}
+.header h1 span {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge.online {
+  background: rgba(0,230,118,0.15);
+  color: var(--green);
+  border: 1px solid rgba(0,230,118,0.3);
+  box-shadow: 0 0 12px rgba(0,230,118,0.15);
+}
+.badge.offline {
+  background: rgba(255,23,68,0.15);
+  color: var(--red);
+  border: 1px solid rgba(255,23,68,0.3);
+}
+.nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.nav-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  background: rgba(0,212,255,0.05);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color var(--transition);
+}
+.card:hover {
+  border-color: rgba(0,212,255,0.2);
+}
+.card.accent-border {
+  border-left: 3px solid var(--accent);
+}
+.card h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h2 .icon {
+  font-size: 18px;
+}
+.card p {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(48,54,61,0.4);
+}
+.setting-row:last-child {
+  border-bottom: none;
+}
+.setting-label {
+  font-size: 13px;
+  color: var(--text);
+}
+.setting-label small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: var(--border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.toggle.active {
+  background: var(--accent-dim);
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--text);
+  border-radius: 50%;
+  transition: transform var(--transition);
+}
+.toggle.active::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(0,212,255,0.4);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-danger {
+  background: rgba(255,23,68,0.15);
+  color: var(--red);
+  border: 1px solid rgba(255,23,68,0.3);
+}
+.btn-danger:hover {
+  background: rgba(255,23,68,0.25);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  background: rgba(0,212,255,0.05);
+}
+.ai-safety-section {
+  grid-column: 1 / -1;
+}
+.result-box {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  display: none;
+  color: var(--text-muted);
+}
+.result-box.visible {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+.result-box.scanning {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 16px rgba(0,212,255,0.1);
+}
+.result-box .status-ok {
+  color: var(--green);
+}
+.result-box .status-warn {
+  color: var(--orange);
+}
+.result-box .status-err {
+  color: var(--red);
+}
+.result-box .label {
+  color: var(--purple);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.2); }
+  50% { box-shadow: 0 0 24px rgba(0,212,255,0.5); }
+}
+.pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,212,255,0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.terminal-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2px 0;
+}
+.terminal-prompt {
+  color: var(--green);
+  flex-shrink: 0;
+  user-select: none;
+}
+.info-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>JARVIS <span>Settings</span></h1>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span class="badge online" id="statusBadge">System Online</span>
+    <div class="nav-links">
+      <a href="/jarvis/mobile">Control Center</a>
+      <a href="/jarvis/diagnostics">Diagnostics</a>
+      <a href="/jarvis/about">About</a>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+
+  <div class="card accent-border">
+    <h2><span class="icon">&#9881;</span> Runtime</h2>
+    <div class="setting-row">
+      <div class="setting-label">Auto-scheduler <small>Periodic task scheduling</small></div>
+      <div class="toggle active" data-key="auto_scheduler" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Voice listener <small>Voice command detection</small></div>
+      <div class="toggle active" data-key="voice_listener" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Debug mode <small>Verbose logging</small></div>
+      <div class="toggle" data-key="debug_mode" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Telemetry <small>Anonymous usage data</small></div>
+      <div class="toggle active" data-key="telemetry" onclick="toggleSetting(this)"></div>
+    </div>
+  </div>
+
+  <div class="card accent-border">
+    <h2><span class="icon">&#128274;</span> Agent Security</h2>
+    <div class="setting-row">
+      <div class="setting-label">Execution approval <small>Require approval before apply</small></div>
+      <div class="toggle active" data-key="exec_approval" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Sandbox mode <small>Run changes in isolated env</small></div>
+      <div class="toggle active" data-key="sandbox" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Rollback snapshots <small>Auto snapshot before changes</small></div>
+      <div class="toggle active" data-key="rollback" onclick="toggleSetting(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Git auto-commit <small>Commit after each change</small></div>
+      <div class="toggle" data-key="git_auto" onclick="toggleSetting(this)"></div>
+    </div>
+  </div>
+
+  <div class="card accent-border">
+    <h2><span class="icon">&#127911;</span> Voice</h2>
+    <div class="setting-row">
+      <div class="setting-label">Wake word <small>Trigger phrase</small></div>
+      <span style="color:var(--accent);font-size:13px;font-weight:600">"JARVIS"</span>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Language</div>
+      <span style="color:var(--text-muted);font-size:13px">en-US</span>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">TTS provider</div>
+      <span style="color:var(--text-muted);font-size:13px">ElevenLabs</span>
+    </div>
+  </div>
+
+  <div class="card accent-border">
+    <h2><span class="icon">&#128200;</span> Limits</h2>
+    <div class="setting-row">
+      <div class="setting-label">Max task duration <small>Seconds before timeout</small></div>
+      <span style="color:var(--accent);font-size:13px;font-weight:600">300s</span>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Concurrent tasks</div>
+      <span style="color:var(--accent);font-size:13px;font-weight:600">1</span>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Output max size <small>KB per file</small></div>
+      <span style="color:var(--accent);font-size:13px;font-weight:600">500 KB</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="grid">
+  <div class="card ai-safety-section">
+    <h2><span class="icon">&#9889;</span> AI Safety Status</h2>
+    <p>Analyze the current codebase for execution safety using the Gemini AI orchestrator. This runs a static safety scan against project files and reports potential risks.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn btn-primary pulse" id="safetyBtn" onclick="runSafetyCheck()">
+        &#9889; Run AI Safety Check
+      </button>
+      <button class="btn btn-outline" onclick="clearResults()">Clear</button>
+    </div>
+    <pre class="result-box" id="safetyResult"><span class="terminal-prompt">$</span> <span style="color:var(--text-muted)">Awaiting safety scan...</span></pre>
+    <p class="info-text" id="safetyTimestamp"></p>
+  </div>
+</div>
+
+<script>
+const toggleState = {};
+
+function toggleSetting(el) {
+  el.classList.toggle('active');
+  const key = el.dataset.key;
+  const now = el.classList.contains('active');
+  toggleState[key] = now;
+}
+
+function clearResults() {
+  const box = document.getElementById('safetyResult');
+  box.classList.remove('visible', 'scanning');
+  box.innerHTML = '<span class="terminal-prompt">$</span> <span style="color:var(--text-muted)">Awaiting safety scan...</span>';
+  document.getElementById('safetyTimestamp').textContent = '';
+  document.getElementById('safetyBtn').disabled = false;
+  document.getElementById('safetyBtn').innerHTML = '&#9889; Run AI Safety Check';
+}
+
+async function runSafetyCheck() {
+  const btn = document.getElementById('safetyBtn');
+  const box = document.getElementById('safetyResult');
+  const ts = document.getElementById('safetyTimestamp');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Scanning...';
+  box.classList.add('visible', 'scanning');
+  box.innerHTML = '<span class="terminal-prompt">$</span> <span style="color:var(--accent)">Initializing Gemini safety scan...</span>\n';
+
+  try {
+    const resp = await fetch('/jarvis/api/settings/ai-safety-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        context: 'JARVIS-NEXT engineering runtime system settings',
+        toggle_state: toggleState,
+      }),
+    });
+    const data = await resp.json();
+
+    box.classList.remove('scanning');
+
+    if (data.ok) {
+      let output = '';
+      const lines = (data.result || '').split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('[OK]') || trimmed.startsWith('SAFE') || trimmed.startsWith('PASS')) {
+          output += '<span class="terminal-prompt">$</span> <span class="status-ok">' + escapeHtml(line) + '</span>\n';
+        } else if (trimmed.startsWith('[WARN]') || trimmed.startsWith('WARNING')) {
+          output += '<span class="terminal-prompt">$</span> <span class="status-warn">' + escapeHtml(line) + '</span>\n';
+        } else if (trimmed.startsWith('[ERR]') || trimmed.startsWith('FAIL') || trimmed.startsWith('ERROR')) {
+          output += '<span class="terminal-prompt">$</span> <span class="status-err">' + escapeHtml(line) + '</span>\n';
+        } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          output += '<span class="terminal-prompt">$</span> <span style="color:var(--purple)">' + escapeHtml(line) + '</span>\n';
+        } else {
+          output += '<span class="terminal-prompt">$</span> ' + escapeHtml(line) + '\n';
+        }
+      }
+      box.innerHTML = output;
+      ts.textContent = 'Last scan: ' + new Date(data.timestamp || Date.now()).toISOString();
+    } else {
+      box.innerHTML = '<span class="terminal-prompt">$</span> <span class="status-err">! Safety check failed: ' + escapeHtml(data.error || 'Unknown error') + '</span>';
+    }
+  } catch (err) {
+    box.classList.remove('scanning');
+    box.innerHTML = '<span class="terminal-prompt">$</span> <span class="status-err">! Network error: ' + escapeHtml(err.message) + '</span>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '&#9889; Run AI Safety Check';
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+document.getElementById('safetyTimestamp').textContent = 'Ready. Click "Run AI Safety Check" to begin.';
+</script>
+</body>
+</html>

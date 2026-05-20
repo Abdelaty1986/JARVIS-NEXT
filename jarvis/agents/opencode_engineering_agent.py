@@ -11,7 +11,16 @@ from pathlib import Path
 from jarvis.agents.base_agent import BaseAgent
 
 
-OPCODE_CLI = "/usr/local/bin/opencode"
+def _find_opencode():
+    path = os.environ.get("OPCODE_CLI")
+    if path:
+        return path
+    path = shutil.which("opencode")
+    if path:
+        return path
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "bin", "opencode")
+
+OPCODE_CLI = _find_opencode()
 JARVIS_PROJECT_ROOT = os.path.abspath(
     os.environ.get(
         "JARVIS_PROJECT_ROOT",
@@ -29,17 +38,18 @@ def detect_opencode():
         "last_check": None,
         "error": None,
     }
-    if not os.path.isfile(OPCODE_CLI):
-        info["error"] = f"opencode not found at {OPCODE_CLI}"
+    cli = _find_opencode()
+    if not os.path.isfile(cli):
+        info["error"] = f"opencode not found at {cli}"
         info["last_check"] = datetime.now(timezone.utc).isoformat()
         return info
-    if not os.access(OPCODE_CLI, os.X_OK):
-        info["error"] = f"opencode at {OPCODE_CLI} is not executable"
+    if not os.access(cli, os.X_OK):
+        info["error"] = f"opencode at {cli} is not executable"
         info["last_check"] = datetime.now(timezone.utc).isoformat()
         return info
     try:
         result = subprocess.run(
-            [OPCODE_CLI, "--version"],
+            [cli, "--version"],
             capture_output=True, text=True, timeout=15,
         )
         if result.returncode == 0:
@@ -51,7 +61,7 @@ def detect_opencode():
         info["last_check"] = datetime.now(timezone.utc).isoformat()
         return info
     info["installed"] = True
-    info["executable_path"] = OPCODE_CLI
+    info["executable_path"] = cli
     info["enabled"] = True
     info["last_check"] = datetime.now(timezone.utc).isoformat()
     return info
@@ -312,12 +322,13 @@ class OpenCodeEngineeringAgent(BaseAgent):
         return result
 
     def _build_opencode_command(self, task, mode):
+        cli = _find_opencode()
         if mode == "plan_only":
-            cmd = [OPCODE_CLI, "run", "--print-logs", f"Plan only: {task}"]
+            cmd = [cli, "run", "--print-logs", f"Plan only: {task}"]
         elif mode == "direct_apply_inside_project_root":
-            cmd = [OPCODE_CLI, "run", "--print-logs", task]
+            cmd = [cli, "run", "--print-logs", task]
         else:
-            cmd = [OPCODE_CLI, "run", "--print-logs", task]
+            cmd = [cli, "run", "--print-logs", task]
         return cmd
 
     def _safe_env(self):

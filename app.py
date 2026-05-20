@@ -3,6 +3,13 @@
 
 import os
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+dotenv_path = Path(__file__).resolve().parent / ".env"
+if dotenv_path.exists():
+    load_dotenv(dotenv_path, override=True)
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "JARVIS_CORE"))
 

@@ -239,145 +239,156 @@ def _is_engineering_command(text):
 
 @execution_bp.route("/jarvis/api/runtime/execute", methods=["POST"])
 def runtime_execute():
-    payload = request.json or {}
-    command = payload.get("command", "")
-    task_text = payload.get("task", command)
+    try:
+        payload = request.json or {}
+        command = payload.get("command", "")
+        task_text = payload.get("task", command)
 
-    if not command.strip():
-        return jsonify({"ok": False, "error": "No command provided"}), 400
+        if not command.strip():
+            return jsonify({"ok": False, "error": "No command provided"}), 400
 
-    # Route engineering commands to the engineering pipeline
-    if _is_engineering_command(task_text):
-        from jarvis_app.routes.engineering_routes import engineering_execute as eng_exec
-        return eng_exec()
+        if _is_engineering_command(task_text):
+            from jarvis_app.routes.engineering_routes import engineering_execute as eng_exec
+            return eng_exec()
 
-    routing = _router.route(task_text)
-    task = _task_state.create(task_text, routing["route"])
-    agent_id = _orch.select_agent(routing["route"], task_text)
+        routing = _router.route(task_text)
+        task = _task_state.create(task_text, routing["route"])
+        agent_id = _orch.select_agent(routing["route"], task_text)
 
-    action = _detect_action(task_text)
-    plan = _create_plan(action, task_text)
+        action = _detect_action(task_text)
+        plan = _create_plan(action, task_text)
 
-    task = _task_state.update(
-        task["task_id"],
-        selected_agent=agent_id,
-        status="routed",
-        normalized_text=routing["normalized"],
-        action=action,
-        plan=plan,
-    )
-    task = _task_state.update(task["task_id"], status="waiting_approval")
+        task = _task_state.update(
+            task["task_id"],
+            selected_agent=agent_id,
+            status="routed",
+            normalized_text=routing["normalized"],
+            action=action,
+            plan=plan,
+        )
+        task = _task_state.update(task["task_id"], status="waiting_approval")
 
-    _orch.log_agent_action(agent_id, routing["route"], task["task_id"], "waiting_approval")
+        _orch.log_agent_action(agent_id, routing["route"], task["task_id"], "waiting_approval")
 
-    return jsonify({
-        "ok": True,
-        "task_id": task["task_id"],
-        "status": "waiting_approval",
-        "route": routing["route"],
-        "action": action,
-        "agent_id": agent_id,
-        "plan": plan,
-    })
+        return jsonify({
+            "ok": True,
+            "task_id": task["task_id"],
+            "status": "waiting_approval",
+            "route": routing["route"],
+            "action": action,
+            "agent_id": agent_id,
+            "plan": plan,
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Runtime execute failed: {e}"}), 500
 
 
 @execution_bp.route("/jarvis/api/execution/approve", methods=["POST"])
 def execution_approve():
-    payload = request.json or {}
-    task_id = payload.get("task_id")
+    try:
+        payload = request.json or {}
+        task_id = payload.get("task_id")
 
-    if task_id:
-        task = _task_state.get(task_id)
-        if not task:
-            return jsonify({"ok": False, "error": "Task not found"}), 404
-        if task.get("status") not in ("waiting_approval",):
-            return jsonify({"ok": False, "error": f"Task state is '{task.get('status')}', expected 'waiting_approval'"}), 400
-        _task_state.update(task_id, status="approved", approval_state="approved")
-    else:
-        all_tasks = _task_state.list_all(999)
-        waiting = [t for t in all_tasks if t.get("status") == "waiting_approval"]
-        if not waiting:
-            return jsonify({"ok": False, "error": "No tasks waiting for approval"}), 404
-        task_id = waiting[0]["task_id"]
-        _task_state.update(task_id, status="approved", approval_state="approved")
+        if task_id:
+            task = _task_state.get(task_id)
+            if not task:
+                return jsonify({"ok": False, "error": "Task not found"}), 404
+            if task.get("status") not in ("waiting_approval",):
+                return jsonify({"ok": False, "error": f"Task state is '{task.get('status')}', expected 'waiting_approval'"}), 400
+            _task_state.update(task_id, status="approved", approval_state="approved")
+        else:
+            all_tasks = _task_state.list_all(999)
+            waiting = [t for t in all_tasks if t.get("status") == "waiting_approval"]
+            if not waiting:
+                return jsonify({"ok": False, "error": "No tasks waiting for approval"}), 404
+            task_id = waiting[0]["task_id"]
+            _task_state.update(task_id, status="approved", approval_state="approved")
 
-    return jsonify({"ok": True, "task_id": task_id, "status": "approved", "message": "Task approved"})
+        return jsonify({"ok": True, "task_id": task_id, "status": "approved", "message": "Task approved"})
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Approve failed: {e}"}), 500
 
 
 @execution_bp.route("/jarvis/api/execution/run", methods=["POST"])
 def execution_run():
-    payload = request.json or {}
-    task_id = payload.get("task_id")
+    try:
+        payload = request.json or {}
+        task_id = payload.get("task_id")
 
-    def _resolve_task():
-        nonlocal task_id
-        if task_id:
-            t = _task_state.get(task_id)
-            if not t:
-                return None, "Task not found"
-            if t.get("status") not in ("approved", "waiting_approval"):
-                return None, f"Task state is '{t['status']}', expected 'approved' or 'waiting_approval'"
-            return t, None
-        all_tasks = _task_state.list_all(999)
-        for status_filter in ("approved", "waiting_approval"):
-            candidates = [t for t in all_tasks if t.get("status") == status_filter]
-            if candidates:
-                return candidates[0], None
-        return None, "No tasks ready to run"
+        def _resolve_task():
+            nonlocal task_id
+            if task_id:
+                t = _task_state.get(task_id)
+                if not t:
+                    return None, "Task not found"
+                if t.get("status") not in ("approved", "waiting_approval"):
+                    return None, f"Task state is '{t['status']}', expected 'approved' or 'waiting_approval'"
+                return t, None
+            all_tasks = _task_state.list_all(999)
+            for status_filter in ("approved", "waiting_approval"):
+                candidates = [t for t in all_tasks if t.get("status") == status_filter]
+                if candidates:
+                    return candidates[0], None
+            return None, "No tasks ready to run"
 
-    task, err = _resolve_task()
-    if err:
-        return jsonify({"ok": False, "error": err}), 404
-    if not task:
-        return jsonify({"ok": False, "error": "Task not found"}), 404
+        task, err = _resolve_task()
+        if err:
+            return jsonify({"ok": False, "error": err}), 404
+        if not task:
+            return jsonify({"ok": False, "error": "Task not found"}), 404
 
-    task_id = task["task_id"]
-    if task.get("status") == "waiting_approval":
-        _task_state.update(task_id, status="approved", approval_state="approved")
+        task_id = task["task_id"]
+        if task.get("status") == "waiting_approval":
+            _task_state.update(task_id, status="approved", approval_state="approved")
 
-    _task_state.update(task_id, status="running")
+        _task_state.update(task_id, status="running")
 
-    action = task.get("action") or _detect_action(task.get("raw_text", ""))
-    text = task.get("raw_text", "")
+        action = task.get("action") or _detect_action(task.get("raw_text", ""))
+        text = task.get("raw_text", "")
 
-    success, stdout, stderr, summary = _execute_action(action, task_id, text)
+        success, stdout, stderr, summary = _execute_action(action, task_id, text)
 
-    final_status = "completed" if success else "failed"
-    _task_state.update(
-        task_id,
-        status=final_status,
-        stdout=stdout,
-        stderr=stderr,
-        final_result=summary,
-    )
+        final_status = "completed" if success else "failed"
+        _task_state.update(
+            task_id,
+            status=final_status,
+            stdout=stdout,
+            stderr=stderr,
+            final_result=summary,
+        )
 
-    return jsonify({
-        "ok": success,
-        "task_id": task_id,
-        "status": final_status,
-        "stdout": stdout,
-        "stderr": stderr,
-        "result": summary,
-    })
+        return jsonify({
+            "ok": success,
+            "task_id": task_id,
+            "status": final_status,
+            "stdout": stdout,
+            "stderr": stderr,
+            "result": summary,
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Execution run failed: {e}"}), 500
 
 
 @execution_bp.route("/jarvis/api/execution/reject", methods=["POST"])
 def execution_reject():
-    payload = request.json or {}
-    task_id = payload.get("task_id")
+    try:
+        payload = request.json or {}
+        task_id = payload.get("task_id")
 
-    if task_id:
-        task = _task_state.get(task_id)
-        if not task:
-            return jsonify({"ok": False, "error": "Task not found"}), 404
-        _task_state.update(task_id, status="rejected", approval_state="rejected")
-    else:
-        all_tasks = _task_state.list_all(999)
-        waiting = [t for t in all_tasks if t.get("status") == "waiting_approval"]
-        if waiting:
-            _task_state.update(waiting[0]["task_id"], status="rejected", approval_state="rejected")
+        if task_id:
+            task = _task_state.get(task_id)
+            if not task:
+                return jsonify({"ok": False, "error": "Task not found"}), 404
+            _task_state.update(task_id, status="rejected", approval_state="rejected")
+        else:
+            all_tasks = _task_state.list_all(999)
+            waiting = [t for t in all_tasks if t.get("status") == "waiting_approval"]
+            if waiting:
+                _task_state.update(waiting[0]["task_id"], status="rejected", approval_state="rejected")
 
-    return jsonify({"ok": True, "message": "Task rejected"})
+        return jsonify({"ok": True, "message": "Task rejected"})
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Reject failed: {e}"}), 500
 
 
 @execution_bp.route("/jarvis/api/execution/status")

@@ -11,28 +11,37 @@ _opencode = OpenCodeService(RUNTIME_LOGS_DIR)
 
 @agent_bp.route("/jarvis/api/agents")
 def list_agents():
-    agents = _orch.list_agents()
-    return jsonify({
-        "agents": agents,
-        "opencode_detection": _opencode.status().get("detection"),
-    })
+    try:
+        agents = _orch.list_agents()
+        return jsonify({
+            "agents": agents,
+            "opencode_detection": _opencode.status().get("detection"),
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Failed to list agents: {e}"}), 500
 
 
 @agent_bp.route("/jarvis/api/agents/opencode/status")
 def opencode_status():
-    return jsonify(_opencode.status())
+    try:
+        return jsonify(_opencode.status())
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Failed to get opencode status: {e}"}), 500
 
 
 @agent_bp.route("/jarvis/api/agents/opencode/run", methods=["POST"])
 def opencode_run():
-    payload = request.json or {}
-    task = payload.get("task", "")
-    mode = payload.get("mode", "supervised_apply")
-    output_folder = payload.get("output_folder")
-    if not task:
-        return jsonify({"ok": False, "error": "task is required"}), 400
-    result = _opencode.run(task, output_folder=output_folder, mode=mode)
-    return jsonify(result)
+    try:
+        payload = request.json or {}
+        task = payload.get("task", "")
+        mode = payload.get("mode", "supervised_apply")
+        output_folder = payload.get("output_folder")
+        if not task:
+            return jsonify({"ok": False, "error": "task is required"}), 400
+        result = _opencode.run(task, output_folder=output_folder, mode=mode)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"OpenCode run failed: {e}"}), 500
 
 
 @agent_bp.route("/jarvis/api/agents/opencode/tasks")

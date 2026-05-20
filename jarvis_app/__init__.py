@@ -1,5 +1,7 @@
 import os
-from flask import Flask
+import traceback
+
+from flask import Flask, jsonify
 
 from config import SECRET_KEY, DEBUG, TEMPLATES_DIR, STATIC_DIR, BASE_DIR
 
@@ -16,7 +18,33 @@ def create_app():
     app.config["BASE_DIR"] = BASE_DIR
 
     _register_blueprints(app)
+    _register_error_handlers(app)
     return app
+
+
+def _register_error_handlers(app):
+    @app.errorhandler(400)
+    def bad_request(e):
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return jsonify({"ok": False, "error": "Not found"}), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return jsonify({"ok": False, "error": "Method not allowed"}), 405
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
+
+    @app.errorhandler(Exception)
+    def unhandled_exception(e):
+        if app.config.get("DEBUG"):
+            tb = traceback.format_exc()
+            return jsonify({"ok": False, "error": str(e), "traceback": tb}), 500
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
 
 
 def _register_blueprints(app):

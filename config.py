@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).resolve()
@@ -23,7 +24,11 @@ DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
 
-OPCODE_CLI = os.environ.get("OPCODE_CLI", "/usr/local/bin/opencode")
+OPCODE_CLI = (
+    os.environ.get("OPCODE_CLI")
+    or shutil.which("opencode")
+    or str(BASE_DIR / "bin" / "opencode")
+)
 
 for d in [TEMPLATES_DIR, STATIC_DIR, OUTPUTS_DIR, RUNTIME_MEMORY_DIR, RUNTIME_LOGS_DIR, REPORTS_DIR]:
     d.mkdir(parents=True, exist_ok=True)

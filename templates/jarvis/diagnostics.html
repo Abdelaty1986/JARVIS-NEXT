@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagnostics - JARVIS</title>
+<style>
+:root { --bg: #0d1117; --bg-card: #1c2128; --border: #30363d; --text: #e6edf3; --text-muted: #8b949e; --accent: #00d4ff; --green: #00e676; --red: #ff1744; --radius: 12px; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+h1 { font-size: 24px; margin-bottom: 16px; color: var(--accent); }
+h2 { font-size: 18px; margin-bottom: 12px; color: var(--text); }
+.status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.info { color: var(--text-muted); font-size: 14px; }
+.btn { display: inline-block; padding: 10px 20px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+.btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Diagnostics</h1>
+  <p class="info">JARVIS-NEXT Engineering Runtime</p>
+</div>
+<div class="card">
+  <h2>Status</h2>
+  <p><span class="status-dot online"></span>System Online</p>
+  <p class="info">Page: <code>/jarvis/diagnostics</code></p>
+  <p class="info" id="timestamp">Loading...</p>
+</div>
+<div class="card" style="text-align:center">
+  <a href="/jarvis/mobile" class="btn">Back to Mobile Control Center</a>
+</div>
+<script>
+document.getElementById('timestamp').textContent = 'Generated: ' + new Date().toISOString();
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import json
 import os
+import shlex
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,8 +19,9 @@ class ExecutionService:
         if not safe:
             return self._result(False, command, None, "", reason, task_id)
         try:
+            cmd_list = shlex.split(command)
             proc = subprocess.run(
-                command, shell=True, capture_output=True, text=True, timeout=30,
+                cmd_list, shell=False, capture_output=True, text=True, timeout=30,
                 cwd=str(BASE_DIR),
             )
             return self._result(

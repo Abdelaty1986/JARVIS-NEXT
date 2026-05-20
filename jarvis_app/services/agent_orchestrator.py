@@ -77,11 +77,16 @@ class AgentOrchestrator:
         self._check_opencode()
 
     def _check_opencode(self):
-        import os, subprocess
+        import os, shutil, subprocess
+        from pathlib import Path
         try:
-            opc = os.environ.get("OPCODE_CLI", "/usr/local/bin/opencode")
+            opc = (
+                os.environ.get("OPCODE_CLI")
+                or shutil.which("opencode")
+                or str(Path(__file__).resolve().parent.parent.parent / "bin" / "opencode")
+            )
         except Exception:
-            opc = "/usr/local/bin/opencode"
+            opc = shutil.which("opencode") or "./bin/opencode"
         detail = {"executable_path": opc}
         if os.path.isfile(opc) and os.access(opc, os.X_OK):
             try:
